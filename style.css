@@ -34,13 +34,21 @@
   --shadow-card:      0 4px 18px rgba(0, 37, 84, 0.08);
 }
 
-body {
+html, body {
+  width: 100%;
+  height: 100%;
   font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
   background-color: var(--bg-page);
   color: var(--texto-dark);
   line-height: 1.4;
-  min-height: 100vh;
-  overflow-x: hidden;
+}
+
+body.vista-mapa-limpio {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
 }
 
 /* =====================================================
@@ -509,13 +517,14 @@ body {
   backdrop-filter: blur(4px);
   border: 1px solid rgba(200, 218, 236, 0.8);
   border-radius: 8px;
-  padding: 8px 12px;
+  padding: 7px 11px;
   box-shadow: 0 2px 8px rgba(0, 37, 84, 0.08);
   z-index: 40;
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  pointer-events: none;
+  gap: 3.5px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
 }
 .leyenda-fila {
   display: flex;
@@ -560,32 +569,52 @@ body {
    ===================================================== */
 .provincia,
 .provincia-svg {
-  fill: var(--bg-provincia);
-  stroke: #98b6d4;
   vector-effect: non-scaling-stroke;
-  stroke-width: 1.2px;
+  stroke-width: 1.15px;
   cursor: pointer;
-  transition: fill 0.18s, stroke 0.18s, filter 0.18s;
+  transition: fill 0.2s ease, stroke 0.2s ease, filter 0.2s ease;
 }
 .provincia:hover,
 .provincia-svg:hover {
-  fill: #d3e5f7;
-  stroke: #6b94be;
+  filter: brightness(0.92) saturate(1.15);
+  stroke-width: 1.8px;
 }
 .provincia.seleccionada,
 .provincia-svg.seleccionada {
-  fill: #ffe875;
-  stroke: #cca600;
+  fill: #ffe875 !important;
+  stroke: #cca600 !important;
   vector-effect: non-scaling-stroke;
   stroke-width: 1.8px;
   filter: drop-shadow(0 2px 8px rgba(255, 210, 0, 0.45));
 }
 
-/* Nombres de provincias centrados — tamaño y opacidad controlados dinámicamente */
+/* Regiones en Colores Pasteles Suaves (definidas según el Excel) */
+.region-sur {
+  fill: #CDE8F5;
+  stroke: #8ec3de;
+}
+.region-pba_lapampa {
+  fill: #E8DAEF;
+  stroke: #b89ec9;
+}
+.region-metropolitana {
+  fill: #FADBD8;
+  stroke: #e09390;
+}
+.region-cuyo_noa {
+  fill: #FDEBD0;
+  stroke: #dfba82;
+}
+.region-centro_nea {
+  fill: #D4EFDF;
+  stroke: #88c49e;
+}
+
+/* Nombres de provincias centrados — máxima legibilidad sobre colores pasteles */
 .label-provincia {
   font-family: 'Inter', sans-serif;
-  font-weight: 700;
-  fill: #547394;
+  font-weight: 800;
+  fill: #1e355b;
   text-anchor: middle;
   pointer-events: none;
   dominant-baseline: middle;
@@ -1170,3 +1199,258 @@ body {
     height: 520px;
   }
 }
+
+/* =====================================================
+   VISTA MAPA LIMPIO Y RUTAS (FULL VIEWPORT)
+   ===================================================== */
+.vista-mapa-limpio {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.topbar-title-clean {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 20px;
+}
+.topbar-title-clean h1 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+}
+.topbar-badge {
+  background-color: rgba(255, 210, 0, 0.18);
+  border: 1px solid rgba(255, 210, 0, 0.5);
+  color: var(--ca-amarillo);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+}
+
+#pantalla-mapa {
+  flex: 1;
+  width: 100%;
+  height: calc(100vh - 54px);
+  position: relative;
+  overflow: hidden;
+}
+
+.mapa-contenedor-full {
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-mapa-ocean);
+  position: relative;
+  overflow: hidden;
+  cursor: grab;
+}
+.mapa-contenedor-full:active {
+  cursor: grabbing;
+}
+
+.dot-nodo-clog {
+  background-color: #002554;
+  border: 2px solid #FFD200;
+}
+
+/* Filtros en Topbar */
+.rutas-filtros {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 20px;
+}
+.btn-filtro-ruta {
+  background-color: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+.btn-filtro-ruta:hover {
+  background-color: rgba(255, 255, 255, 0.22);
+}
+.btn-filtro-ruta.activa {
+  background-color: #ffffff;
+  color: var(--ca-azul-dark);
+  border-color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+.btn-filtro-ruta.btn-bue.activa {
+  border-color: #0066FF;
+  color: #0052cc;
+}
+.btn-filtro-ruta.btn-cordoba.activa {
+  border-color: #e65100;
+  color: #c2410c;
+}
+.btn-filtro-ruta.btn-santafe.activa {
+  border-color: #059669;
+  color: #047857;
+}
+.btn-filtro-ruta.btn-amba.activa {
+  border-color: #2563eb;
+  color: #1d4ed8;
+  background-color: #eff6ff;
+}
+
+.dot-filtro {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.dot-bue { background-color: #0066FF; box-shadow: 0 0 6px #0066FF; }
+.dot-cordoba { background-color: #e65100; box-shadow: 0 0 6px #e65100; }
+.dot-santafe { background-color: #059669; box-shadow: 0 0 6px #059669; }
+.dot-amba { background-color: #2563eb; box-shadow: 0 0 6px #2563eb; }
+
+/* Leyenda del Mapa */
+.leyenda-titulo {
+  font-size: 11px;
+  font-weight: 700;
+  color: #002554;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.leyenda-separador {
+  height: 1px;
+  background-color: #e2e8f0;
+  margin: 6px 0;
+}
+.leyenda-linea {
+  display: inline-block;
+  width: 22px;
+  height: 3.5px;
+  border-radius: 2px;
+}
+.linea-bue {
+  background-color: #0066FF;
+  box-shadow: 0 0 5px rgba(0, 102, 255, 0.6);
+}
+.linea-cordoba {
+  background-color: #e65100;
+  box-shadow: 0 0 5px rgba(230, 81, 0, 0.6);
+}
+.linea-santafe {
+  background-color: #059669;
+  box-shadow: 0 0 5px rgba(5, 150, 105, 0.6);
+}
+.linea-amba {
+  background-color: #2563eb;
+  box-shadow: 0 0 5px rgba(37, 99, 235, 0.6);
+}
+.dot-hub-star {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  background-color: #FFD200;
+  color: #002554;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 900;
+  border: 1px solid #002554;
+}
+
+/* Indicadores de Región en Leyenda (Pasteles) */
+.leyenda-cuadro {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+.reg-cuyo-noa   { background-color: #FDEBD0; border-color: #dfba82; }
+.reg-centro-nea { background-color: #D4EFDF; border-color: #88c49e; }
+.reg-pba-lp     { background-color: #E8DAEF; border-color: #b89ec9; }
+.reg-metro      { background-color: #FADBD8; border-color: #e09390; }
+.reg-sur        { background-color: #CDE8F5; border-color: #8ec3de; }
+
+/* Rutas y flechas SVG */
+.ruta-flecha-grupo {
+  transition: opacity 0.25s ease, filter 0.25s ease;
+  cursor: pointer;
+}
+.ruta-flecha-grupo:hover path.ruta-linea {
+  stroke-width: 4px !important;
+  filter: drop-shadow(0 0 4px rgba(0, 37, 84, 0.6));
+}
+.ruta-flecha-grupo.atenuada {
+  opacity: 0.12;
+}
+
+/* Animación sutil de pulso en los hubs de destino */
+@keyframes pulso-hub {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.35); opacity: 0.25; }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+.hub-halo-pulso {
+  animation: pulso-hub 2.4s infinite ease-in-out;
+  transform-origin: center;
+}
+
+/* =============================================================
+   ESTILOS DEDICADOS PARA EL ÁREA METROPOLITANA (AMBA)
+   ============================================================= */
+@keyframes amba-flow-dash {
+  to {
+    stroke-dashoffset: -28;
+  }
+}
+
+.amba-ruta-linea {
+  animation: amba-flow-dash 1.2s linear infinite;
+}
+
+.amba-ruta-g {
+  cursor: pointer;
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+.amba-ruta-g:hover .amba-ruta-halo {
+  stroke: rgba(37, 99, 235, 0.45);
+  stroke-width: 14;
+}
+
+.amba-distancia-badge {
+  pointer-events: none;
+  transition: transform 0.2s ease;
+}
+
+.amba-nodo-g {
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.amba-nodo-g:hover .amba-pill-bg {
+  stroke-width: 2.2px;
+  stroke: #ffffff;
+}
+
+.amba-hub-g {
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.amba-hub-g:hover {
+  filter: drop-shadow(0 0 12px rgba(255, 210, 0, 0.9));
+}
+
+
+
