@@ -1115,8 +1115,323 @@ body.vista-mapa-limpio {
 }
 
 /* =====================================================
-   8. RESPONSIVIDAD
+   8. RESPONSIVIDAD Y ESTILOS AVANZADOS LÍNEAS LTN / LTC
    ===================================================== */
+/* Barra de opciones compacta y minimalista LTN / LTC (no obstruye el mapa) */
+.banner-modo-ltn-compact {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(29, 112, 184, 0.28);
+  border-radius: 30px;
+  padding: 3px 8px 3px 5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 18px rgba(0, 37, 84, 0.14), 0 1px 4px rgba(0, 0, 0, 0.05);
+  z-index: 50;
+  animation: fadeInDown 0.25s ease;
+}
+
+.subfiltros-ltn-wrap {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background-color: #f1f5f9;
+  padding: 2px 3px;
+  border-radius: 20px;
+}
+.btn-subfiltro-ltn {
+  background: transparent;
+  border: none;
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748b;
+  padding: 3px 8px;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.btn-subfiltro-ltn:hover {
+  color: #0f172a;
+}
+.btn-subfiltro-ltn.activa {
+  background-color: #ffffff;
+  color: #002554;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+.linea-select-wrap {
+  display: flex;
+  align-items: center;
+}
+.select-linea-troncal {
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 16px;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #002554;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  max-width: 170px;
+}
+.select-linea-troncal:focus,
+.select-linea-troncal:hover {
+  border-color: #1D70B8;
+  box-shadow: 0 0 0 2px rgba(29, 112, 184, 0.2);
+}
+
+.btn-cerrar-banner-ltn {
+  background: rgba(0, 37, 84, 0.08);
+  border: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #002554;
+  font-size: 10.5px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-left: 2px;
+}
+.btn-cerrar-banner-ltn:hover {
+  background: #002554;
+  color: #ffffff;
+}
+
+/* Badges de número de línea flotantes sobre el mapa (pequeños y visibles al hacer zoom) */
+.badge-linea-mapa {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 5px;
+  border-radius: 7px;
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  color: #ffffff;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0, 37, 84, 0.35), 0 0 0 1px #ffffff;
+  transition: all 0.15s ease;
+  transform: translate(-50%, -50%);
+  pointer-events: auto !important;
+  user-select: none;
+  opacity: 0.92;
+}
+.badge-linea-mapa.ltn-badge {
+  background: linear-gradient(135deg, #1D70B8 0%, #002554 100%);
+}
+.badge-linea-mapa.ltc-badge {
+  background: linear-gradient(135deg, #E67E22 0%, #B95000 100%);
+}
+.badge-linea-mapa:hover,
+.badge-linea-mapa.seleccionado {
+  transform: translate(-50%, -50%) scale(1.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 0 2px #FFD200;
+  z-index: 9999 !important;
+  opacity: 1;
+  display: inline-flex !important;
+}
+
+/* Ocultar badges a nivel nacional (zoom bajo) para no saturar el mapa, mostrarlos al hacer zoom */
+.zoom-bajo-lineas .badge-linea-mapa:not(.seleccionado) {
+  display: none !important;
+}
+
+/* Tarjeta Flotante de Inspección de Línea LTN / LTC */
+.card-linea-detalle {
+  position: absolute;
+  bottom: 38px;
+  left: 20px;
+  width: 320px;
+  max-width: calc(100vw - 40px);
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 37, 84, 0.15);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 37, 84, 0.22), 0 2px 8px rgba(0, 0, 0, 0.08);
+  z-index: 1000;
+  overflow: hidden;
+  animation: slideUpCard 0.25s ease-out;
+}
+@keyframes slideUpCard {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card-linea-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #002554 0%, #0a3a75 100%);
+  color: #ffffff;
+}
+.card-linea-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.badge-linea-code {
+  background-color: #FFD200;
+  color: #002554;
+  font-size: 13px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+.badge-linea-type {
+  font-size: 11px;
+  font-weight: 700;
+  color: #93c5fd;
+}
+.btn-card-close {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.8;
+  padding: 0 4px;
+  transition: opacity 0.15s;
+}
+.btn-card-close:hover {
+  opacity: 1;
+}
+
+.card-linea-body {
+  padding: 12px 14px;
+}
+.card-linea-stats {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.card-linea-stats .stat-item {
+  flex: 1;
+  background-color: #f8fafc;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+.card-linea-stats .stat-label {
+  display: block;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.card-linea-stats .stat-val {
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  color: #0f2340;
+  margin-top: 2px;
+}
+
+.card-linea-itinerario-title {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 8px;
+}
+.card-linea-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 8px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+.step-item:hover {
+  background-color: #eff6ff;
+  border-color: #93c5fd;
+}
+.step-num {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #002554;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.step-item.is-origen .step-num {
+  background-color: #1D70B8;
+}
+.step-item.is-destino-final .step-num {
+  background-color: #059669;
+}
+.step-info {
+  flex: 1;
+  min-width: 0;
+}
+.step-name {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.step-tag {
+  font-size: 9px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+/* Marcadores numerados de parada cuando una línea está activa */
+.nodo-step-marker-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -50%);
+}
+.nodo-step-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #ffffff;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4), 0 0 0 2px #ffffff;
+  white-space: nowrap;
+}
+.nodo-step-badge.step-orig { background: #002554; }
+.nodo-step-badge.step-inter { background: #1D70B8; }
+.nodo-step-badge.step-dest { background: #059669; }
+
 @media (max-width: 1050px) {
   .topbar-title-clean h1 {
     display: none;
@@ -1141,4 +1456,11 @@ body.vista-mapa-limpio {
   #pantalla-mapa {
     height: calc(100vh - 90px);
   }
+  .card-linea-detalle {
+    bottom: 20px;
+    left: 10px;
+    right: 10px;
+    width: auto;
+  }
 }
+

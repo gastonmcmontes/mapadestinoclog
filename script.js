@@ -569,6 +569,17 @@ function inicializarMapaLeaflet() {
     }
   }, 350);
 
+  // Control dinámico de visibilidad de etiquetas según nivel de zoom
+  const contenedorMapa = document.getElementById("mapa-contenedor");
+  function actualizarClaseZoom() {
+    if (!leafletMap || !contenedorMapa) return;
+    const currentZoom = leafletMap.getZoom();
+    contenedorMapa.classList.toggle("zoom-bajo-lineas", currentZoom < 5.8);
+  }
+
+  leafletMap.on("zoomend", actualizarClaseZoom);
+  actualizarClaseZoom();
+
   // Click en mapa vacío deselecciona
   leafletMap.on("click", (e) => {
     if (!e.originalEvent || !e.originalEvent._markerClick) {
@@ -683,7 +694,7 @@ function dibujarProvincias(geojson) {
 }
 
 // =============================================================
-// 5. CÁLCULO DE CURVAS BÉZIER PARA FLUJOS LOGÍSTICOS
+// 5. CÁLCULO DE CURVAS BÉZIER Y RUTEO REALISTA DE CORREDORES
 // =============================================================
 function generarPuntosCurva(p1, p2, curvatura = 0.12, numPuntos = 24) {
   const [lat1, lng1] = p1;
@@ -710,6 +721,72 @@ function generarPuntosCurva(p1, p2, curvatura = 0.12, numPuntos = 24) {
 }
 
 // =============================================================
+// 5. CÁLCULO DE TRAZADOS DIRECTOS Y ELEGANTES PARA LÍNEAS TRONCALES
+// =============================================================
+function generarPuntosCurva(p1, p2, curvatura = 0.06, numPuntos = 24) {
+  const [lat1, lng1] = p1;
+  const [lat2, lng2] = p2;
+
+  const midLat = (lat1 + lat2) / 2;
+  const midLng = (lng1 + lng2) / 2;
+
+  const dLat = lat2 - lat1;
+  const dLng = lng2 - lng1;
+
+  const ctrlLat = midLat - dLng * curvatura;
+  const ctrlLng = midLng + dLat * curvatura;
+
+  const puntos = [];
+  for (let i = 0; i <= numPuntos; i++) {
+    const t = i / numPuntos;
+    const invT = 1 - t;
+    const lat = invT * invT * lat1 + 2 * invT * t * ctrlLat + t * t * lat2;
+    const lng = invT * invT * lng1 + 2 * invT * t * ctrlLng + t * t * lng2;
+    puntos.push([lat, lng]);
+  }
+  return puntos;
+}
+
+// Construcción del trazado directo conectando punto a punto cada parada en orden
+function construirTrazadoCompletoLinea(linea, lineIdx = 0) {
+  const origNodo = buscarNodoPorId(linea.origen);
+  if (!origNodo) return { puntos: [], waypoints: [], midpoint: null };
+
+  const waypoints = [origNodo];
+
+  linea.destinos.forEach(destId => {
+    const destNodo = buscarNodoPorId(destId);
+    if (destNodo) {
+      waypoints.push(destNodo);
+    }
+  });
+
+  if (waypoints.length < 2) return { puntos: [], waypoints, midpoint: null };
+
+  const puntosTotales = [];
+  for (let i = 0; i < waypoints.length - 1; i++) {
+    const p1 = [waypoints[i].lat, waypoints[i].lng];
+    const p2 = [waypoints[i+1].lat, waypoints[i+1].lng];
+    
+    // Curvatura suave y directa, con leve variación para que líneas coincidentes se distingan
+    const curv = ((lineIdx % 5 - 2) * 0.015) + (i % 2 === 0 ? 0.035 : -0.025);
+    const tramo = generarPuntosCurva(p1, p2, curv, 24);
+
+    if (puntosTotales.length === 0) {
+      puntosTotales.push(...tramo);
+    } else {
+      puntosTotales.push(...tramo.slice(1));
+    }
+  }
+
+  // Punto representativo para badge de línea (50% del recorrido)
+  const midIdx = Math.max(1, Math.floor(puntosTotales.length * 0.50));
+  const midpoint = puntosTotales[midIdx] || puntosTotales[0];
+
+  return { puntos: puntosTotales, waypoints, midpoint };
+}
+
+// =============================================================
 // 6. RENDERIZADO DE RUTAS Y MARCADORES
 // =============================================================
 function renderizarTodo() {
@@ -726,12 +803,17 @@ function renderizarTodo() {
   const leyFilaLTN = document.getElementById("ley-fila-ltn");
   const leyFilaLTC = document.getElementById("ley-fila-ltc");
   const badgeTotal = document.getElementById("badge-total-rutas");
+  const cardDetalle = document.getElementById("card-linea-detalle");
 
   if (bannerAMBA) bannerAMBA.style.display = esModoAMBA ? "flex" : "none";
   if (bannerLTN) bannerLTN.style.display = esModoLTN ? "flex" : "none";
   if (leyFilaAMBA) leyFilaAMBA.style.display = esModoAMBA ? "flex" : "none";
   if (leyFilaLTN) leyFilaLTN.style.display = esModoLTN ? "flex" : "none";
   if (leyFilaLTC) leyFilaLTC.style.display = esModoLTN ? "flex" : "none";
+
+  if (!esModoLTN && cardDetalle) {
+    cardDetalle.style.display = "none";
+  }
 
   if (esModoLTN) {
     let lineasAMostrar = lineasTroncalesData;
@@ -753,72 +835,74 @@ function renderizarTodo() {
       );
     });
 
+    // Actualizar el dropdown selector de líneas
+    actualizarSelectorLineasTroncales(lineasAMostrar);
+
     const nodosParticipantesLTN = new Set();
+    let lineaActivaObj = null;
 
-    // 1. Dibujar Rutas de Líneas Troncales LTN y LTC
+    // 1. Dibujar Rutas de Líneas Troncales LTN y LTC con Geometría Realista
     lineasAMostrar.forEach((linea, lineIdx) => {
-      const origNodo = buscarNodoPorId(linea.origen);
-      if (!origNodo) return;
+      const { puntos, waypoints, midpoint } = construirTrazadoCompletoLinea(linea, lineIdx);
+      if (puntos.length < 2) return;
 
-      nodosParticipantesLTN.add(linea.origen);
+      waypoints.forEach(w => nodosParticipantesLTN.add(w.id));
 
-      const waypoints = [origNodo];
-      linea.destinos.forEach(destId => {
-        const destNodo = buscarNodoPorId(destId);
-        if (destNodo) {
-          waypoints.push(destNodo);
-          nodosParticipantesLTN.add(destId);
-        }
-      });
+      const esDestacada = (lineaLTNDestacada === linea.codigo);
+      if (esDestacada) lineaActivaObj = { linea, waypoints, puntos };
 
-      if (waypoints.length < 2) return;
+      const colorBase = (linea.tipoRed === "LTN") ? "#1D70B8" : "#E67E22";
+      const colorLinea = esDestacada ? "#FFD200" : colorBase;
+      const opacidad = lineaLTNDestacada ? (esDestacada ? 1.0 : 0.25) : 0.85;
+      const grosor = esDestacada ? 4.8 : (lineaLTNDestacada ? 1.8 : 2.5);
 
-      let puntosTotales = [];
-      for (let i = 0; i < waypoints.length - 1; i++) {
-        const p1 = [waypoints[i].lat, waypoints[i].lng];
-        const p2 = [waypoints[i+1].lat, waypoints[i+1].lng];
-        
-        // Curvatura leve alternada según índice para separar trazas superpuestas
-        const curv = ((lineIdx % 3 === 0 ? 0.07 : lineIdx % 3 === 1 ? -0.06 : 0.04) * (i % 2 === 0 ? 1 : -1));
-        const segmento = generarPuntosCurva(p1, p2, curv, 22);
-
-        if (puntosTotales.length === 0) {
-          puntosTotales.push(...segmento);
-        } else {
-          puntosTotales.push(...segmento.slice(1));
-        }
+      // Línea de resplandor exterior si está destacada
+      if (esDestacada) {
+        const polyGlow = L.polyline(puntos, {
+          pane: "rutasPane",
+          color: "#FFD200",
+          weight: 9,
+          opacity: 0.40,
+          lineCap: "round",
+          lineJoin: "round"
+        });
+        rutasLayerGroup.addLayer(polyGlow);
       }
 
-      const colorLinea = (linea.tipoRed === "LTN") ? "#1D70B8" : "#E67E22";
-
-      const polylineBase = L.polyline(puntosTotales, {
+      const polylineBase = L.polyline(puntos, {
         pane: "rutasPane",
         color: colorLinea,
-        weight: 2.3,
-        opacity: 0.85,
+        weight: grosor,
+        opacity: opacidad,
         lineCap: "round",
         lineJoin: "round"
       });
 
-      const polylineDash = L.polyline(puntosTotales, {
+      const polylineDash = L.polyline(puntos, {
         pane: "rutasPane",
-        color: "#ffffff",
-        weight: 1.2,
-        opacity: 0.70,
+        color: esDestacada ? "#002554" : "#ffffff",
+        weight: esDestacada ? 2.0 : 1.2,
+        opacity: opacidad * 0.85,
         className: "ruta-flow-dash",
         lineCap: "round"
       });
 
-      const destinosStr = waypoints.slice(1).map(w => w.nombreCompleto || w.nombre).join(" ➔ ");
+      const destinosStr = waypoints.slice(1).map((w, idx) => {
+        const num = idx + 1;
+        const tag = (idx === waypoints.length - 2) ? "Destino final" : "Parada";
+        return `<span style="color:#002554;">${num}. ${w.nombreCompleto || w.nombre} <small style="color:#64748b;">(${tag})</small></span>`;
+      }).join("<br>➔ ");
+
       const tooltipText = `
-        <div class="popup-route-title" style="color:${colorLinea}; font-size:12.5px; font-weight:800;">
+        <div class="popup-route-title" style="color:${colorBase}; font-size:13px; font-weight:900;">
           LÍNEA ${linea.codigo} (${linea.tipoRed}) — ${linea.unidad}
         </div>
-        <div class="popup-route-sub" style="font-weight:600; color:#002554; margin-top:2px;">
-          📍 Origen: <strong>${origNodo.nombreCompleto || origNodo.nombre}</strong><br>
-          ➔ Destinos: <strong>${destinosStr}</strong>
+        <div class="popup-route-sub" style="font-weight:600; color:#0f172a; margin-top:4px; line-height:1.4;">
+          📍 <strong>Origen:</strong> ${waypoints[0].nombreCompleto || waypoints[0].nombre}<br>
+          ➔ ${destinosStr}
         </div>
-        ${linea.km ? `<div style="font-size:11px; font-weight:800; color:${colorLinea}; margin-top:4px;">Distancia de itinerario: ${linea.km.toLocaleString()} km</div>` : ''}
+        ${linea.km ? `<div style="font-size:11.5px; font-weight:800; color:${colorBase}; margin-top:5px; border-top:1px solid #e2e8f0; padding-top:3px;">📏 Distancia: <strong>${linea.km.toLocaleString()} km</strong></div>` : ''}
+        <div style="font-size:10px; color:#64748b; margin-top:2px;">(Hacé click para inspeccionar esta línea)</div>
       `;
 
       polylineBase.bindTooltip(tooltipText, { sticky: true, className: "tooltip-ruta" });
@@ -826,14 +910,15 @@ function renderizarTodo() {
 
       const clickAction = (e) => {
         L.DomEvent.stopPropagation(e);
-        abrirModalDetalle(origNodo);
+        seleccionarLineaTroncal(linea.codigo);
       };
 
       const hoverAction = (hover) => {
+        if (lineaLTNDestacada && !esDestacada) return;
         polylineBase.setStyle({
-          weight: hover ? 4.2 : 2.3,
+          weight: hover ? 4.8 : grosor,
           color: hover ? "#FFD200" : colorLinea,
-          opacity: hover ? 1.0 : 0.85
+          opacity: hover ? 1.0 : opacidad
         });
       };
 
@@ -847,9 +932,39 @@ function renderizarTodo() {
 
       rutasLayerGroup.addLayer(polylineBase);
       rutasLayerGroup.addLayer(polylineDash);
+
+      // Badge flotante del número de línea sobre el mapa
+      if (midpoint) {
+        const badgeIcon = L.divIcon({
+          className: "leaflet-linea-badge-icon",
+          iconSize: [0, 0],
+          iconAnchor: [0, 0],
+          html: `
+            <div class="badge-linea-mapa ${linea.tipoRed.toLowerCase()}-badge ${esDestacada ? 'seleccionado' : ''}" 
+                 data-codigo="${linea.codigo}" 
+                 title="Línea ${linea.codigo} (${linea.unidad})">
+              ${linea.codigo}
+            </div>
+          `
+        });
+
+        const badgeMarker = L.marker(midpoint, {
+          pane: "markersPane",
+          icon: badgeIcon,
+          zIndexOffset: esDestacada ? 1000 : 50
+        });
+
+        badgeMarker.on("click", (e) => {
+          L.DomEvent.stopPropagation(e);
+          seleccionarLineaTroncal(linea.codigo);
+        });
+
+        badgeMarker.bindTooltip(tooltipText, { className: "tooltip-ruta" });
+        markersLayerGroup.addLayer(badgeMarker);
+      }
     });
 
-    // 2. Dibujar Marcadores
+    // 2. Dibujar Marcadores de Nodos
     nodosData.forEach(n => {
       if (!n.lat || !n.lng) return;
 
@@ -892,7 +1007,7 @@ function renderizarTodo() {
           iconSize: [0, 0],
           iconAnchor: [0, 0],
           html: `
-            <div class="clog-marker-wrap dest-${destKey} ${estaSel ? 'seleccionado' : ''}" data-id="${n.id}" style="${!esParticipante ? 'opacity: 0.4;' : ''}">
+            <div class="clog-marker-wrap dest-${destKey} ${estaSel ? 'seleccionado' : ''}" data-id="${n.id}" style="${!esParticipante ? 'opacity: 0.35;' : ''}">
               <div class="clog-marker-dot" style="${esParticipante ? 'background-color: #1D70B8;' : ''}"></div>
               <div class="clog-marker-pill" style="${esParticipante ? 'border-left-color: #1D70B8;' : ''}">
                 <span class="pill-name">${n.nombre}</span>
@@ -915,6 +1030,42 @@ function renderizarTodo() {
         markersLayerGroup.addLayer(marker);
       }
     });
+
+    // 3. Si hay una línea destacada activa, mostrar badges numerados de parada en orden
+    if (lineaActivaObj && lineaActivaObj.waypoints) {
+      lineaActivaObj.waypoints.forEach((wp, idx) => {
+        const isOrig = (idx === 0);
+        const isDest = (idx === lineaActivaObj.waypoints.length - 1);
+        const tipoClase = isOrig ? "step-orig" : isDest ? "step-dest" : "step-inter";
+        const textoTag = isOrig ? `① Origen: ${wp.nombre}` : isDest ? `🏁 Destino: ${wp.nombre}` : `• Parada ${idx}: ${wp.nombre}`;
+
+        const stepIcon = L.divIcon({
+          className: "leaflet-step-icon",
+          iconSize: [0, 0],
+          iconAnchor: [0, 0],
+          html: `
+            <div class="nodo-step-marker-wrap">
+              <div class="nodo-step-badge ${tipoClase}">
+                ${textoTag}
+              </div>
+            </div>
+          `
+        });
+
+        const stepMarker = L.marker([wp.lat - 0.28, wp.lng], {
+          pane: "markersPane",
+          icon: stepIcon,
+          zIndexOffset: 2000
+        });
+
+        markersLayerGroup.addLayer(stepMarker);
+      });
+
+      // Actualizar tarjeta lateral de inspección
+      mostrarTarjetaLineaDestacada(lineaActivaObj.linea, lineaActivaObj.waypoints);
+    } else if (cardDetalle) {
+      cardDetalle.style.display = "none";
+    }
 
     return;
   }
@@ -1111,11 +1262,12 @@ function filtrarRutasHub(hubKey) {
 }
 
 // =============================================================
-// ACTIVACIÓN DE MODO LÍNEAS LTN / LTC (DOBLE CLICK)
+// ACTIVACIÓN DE MODO LÍNEAS LTN / LTC Y CONTROLADOR DE SELECCIÓN
 // =============================================================
 function activarModoLTN() {
   filtroHubActivo = "ltn";
   subfiltroLTN = "todas";
+  lineaLTNDestacada = null;
 
   document.querySelectorAll(".btn-filtro-ruta").forEach(btn => {
     btn.classList.toggle("activa", btn.getAttribute("data-hub") === "ltn");
@@ -1123,29 +1275,129 @@ function activarModoLTN() {
 
   const hintTexto = document.getElementById("mapa-hint-texto");
   if (hintTexto) {
-    hintTexto.textContent = "Red Troncal de Transporte • 23 Líneas LTN (Azul) y 5 Líneas LTC (Ámbar) • Hacé click en cualquier nodo";
+    hintTexto.textContent = "Red Troncal de Transporte • 23 Líneas LTN (Azul) y 5 Líneas LTC (Ámbar) • Hacé click en cualquier línea o badge";
   }
 
   renderizarTodo();
 
   if (leafletMap) {
-    leafletMap.flyToBounds(BND_ARGENTINA, { duration: 1.2, padding: [15, 15] });
+    leafletMap.flyToBounds(BND_ARGENTINA, { duration: 1.1, padding: [15, 15] });
   }
 }
 
 function subfiltrarLineasTroncales(tipo) {
   subfiltroLTN = tipo;
+  // Si la línea destacada no corresponde al subfiltro, deseleccionarla
+  if (lineaLTNDestacada) {
+    const lObj = lineasTroncalesData.find(l => l.codigo === lineaLTNDestacada);
+    if (lObj && tipo !== "todas" && lObj.tipoRed !== tipo) {
+      lineaLTNDestacada = null;
+    }
+  }
   renderizarTodo();
 }
 
-let ltnClickTimer = null;
-function manejarClickLTN(event) {
-  if (filtroHubActivo !== "ltn") {
-    if (ltnClickTimer) clearTimeout(ltnClickTimer);
-    ltnClickTimer = setTimeout(() => {
-      activarModoLTN();
-    }, 280);
+function actualizarSelectorLineasTroncales(lineas) {
+  const select = document.getElementById("select-linea-troncal");
+  if (!select) return;
+
+  const valorActual = lineaLTNDestacada || "";
+  let html = `<option value="">🔍 Inspeccionar una línea...</option>`;
+
+  lineas.forEach(l => {
+    const origNodo = buscarNodoPorId(l.origen);
+    const origNombre = origNodo ? origNodo.nombre : l.origen;
+    const destStr = l.destinos.map(d => {
+      const n = buscarNodoPorId(d);
+      return n ? n.nombre : d;
+    }).join(" ➔ ");
+
+    const selectedAttr = (l.codigo === valorActual) ? "selected" : "";
+    html += `<option value="${l.codigo}" ${selectedAttr}>${l.codigo} [${l.tipoRed}]: ${origNombre} ➔ ${destStr}</option>`;
+  });
+
+  select.innerHTML = html;
+}
+
+function seleccionarLineaTroncal(codigo) {
+  lineaLTNDestacada = (lineaLTNDestacada === codigo) ? null : codigo;
+  renderizarTodo();
+
+  if (lineaLTNDestacada) {
+    const lineaObj = lineasTroncalesData.find(l => l.codigo === lineaLTNDestacada);
+    if (lineaObj && leafletMap) {
+      const orig = buscarNodoPorId(lineaObj.origen);
+      const dests = lineaObj.destinos.map(buscarNodoPorId).filter(Boolean);
+      const allPuntos = [orig, ...dests].map(n => [n.lat, n.lng]);
+      if (allPuntos.length >= 2) {
+        leafletMap.flyToBounds(allPuntos, { duration: 1.0, padding: [70, 70], maxZoom: 8.5 });
+      }
+    }
   }
+}
+
+function deseleccionarLineaTroncal() {
+  lineaLTNDestacada = null;
+  renderizarTodo();
+}
+
+function seleccionarLineaTroncalDesdeSelect(codigo) {
+  if (!codigo) {
+    deseleccionarLineaTroncal();
+    return;
+  }
+  lineaLTNDestacada = codigo;
+  renderizarTodo();
+
+  const lineaObj = lineasTroncalesData.find(l => l.codigo === codigo);
+  if (lineaObj && leafletMap) {
+    const orig = buscarNodoPorId(lineaObj.origen);
+    const dests = lineaObj.destinos.map(buscarNodoPorId).filter(Boolean);
+    const allPuntos = [orig, ...dests].map(n => [n.lat, n.lng]);
+    if (allPuntos.length >= 2) {
+      leafletMap.flyToBounds(allPuntos, { duration: 1.0, padding: [70, 70], maxZoom: 8.5 });
+    }
+  }
+}
+
+function mostrarTarjetaLineaDestacada(linea, waypoints) {
+  const card = document.getElementById("card-linea-detalle");
+  if (!card) return;
+
+  const badgeCode = document.getElementById("card-linea-badge");
+  const badgeTipo = document.getElementById("card-linea-tipo");
+  const valUnidad = document.getElementById("card-linea-unidad");
+  const valKm = document.getElementById("card-linea-km");
+  const stepsContainer = document.getElementById("card-linea-itinerario-steps");
+
+  if (badgeCode) badgeCode.textContent = linea.codigo;
+  if (badgeTipo) badgeTipo.textContent = (linea.tipoRed === "LTN") ? "Red Troncal Nacional (LTN)" : "Línea Transversal Interurbana (LTC)";
+  if (valUnidad) valUnidad.textContent = linea.unidad;
+  if (valKm) valKm.textContent = linea.km ? `${linea.km.toLocaleString()} km` : "N/D";
+
+  if (stepsContainer && waypoints) {
+    let stepsHtml = "";
+    waypoints.forEach((wp, idx) => {
+      const isOrig = (idx === 0);
+      const isFinal = (idx === waypoints.length - 1);
+      const stepClass = isOrig ? "is-origen" : isFinal ? "is-destino-final" : "is-intermedia";
+      const tagText = isOrig ? "Cabecera de Origen" : isFinal ? "Destino Final" : `Parada Intermedia ${idx}`;
+      const numLabel = isOrig ? "1" : (idx + 1).toString();
+
+      stepsHtml += `
+        <div class="step-item ${stepClass}">
+          <div class="step-num">${numLabel}</div>
+          <div class="step-info">
+            <div class="step-name">${wp.nombreCompleto || wp.nombre}</div>
+            <div class="step-tag">${tagText} • ${wp.provincia || ''}</div>
+          </div>
+        </div>
+      `;
+    });
+    stepsContainer.innerHTML = stepsHtml;
+  }
+
+  card.style.display = "block";
 }
 
 // =============================================================

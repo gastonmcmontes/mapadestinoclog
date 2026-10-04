@@ -52,8 +52,8 @@
       <button class="btn-filtro-ruta btn-amba" data-hub="amba" onclick="filtrarRutasHub('amba')">
         <span class="dot-filtro dot-amba"></span> AMBA (5)
       </button>
-      <button class="btn-filtro-ruta btn-ltn" id="btn-filtro-ltn" data-hub="ltn" ondblclick="activarModoLTN()" onclick="manejarClickLTN(event)" title="Doble click para visualizar Líneas LTN / LTC">
-        <span class="dot-filtro dot-ltn"></span> Líneas LTN / LTC <span class="badge-dblclick">2x click</span>
+      <button class="btn-filtro-ruta btn-ltn" id="btn-filtro-ltn" data-hub="ltn" onclick="activarModoLTN()" title="Visualizar Líneas Troncales LTN y LTC">
+        <span class="dot-filtro dot-ltn"></span> Líneas LTN / LTC
       </button>
     </div>
 
@@ -87,16 +87,6 @@
         <button id="btn-zoom-in" class="btn-ctrl-mapa" onclick="zoomIn()" title="Acercar">+</button>
         <button id="btn-zoom-out" class="btn-ctrl-mapa" onclick="zoomOut()" title="Alejar">−</button>
         <button id="btn-zoom-reset" class="btn-ctrl-mapa" onclick="zoomReset()" title="Restablecer vista nacional">↺</button>
-        <button id="btn-toggle-leyenda" class="btn-ctrl-mapa" onclick="toggleLeyenda()" title="Mostrar/Ocultar Leyenda">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="8" y1="6" x2="21" y2="6"></line>
-            <line x1="8" y1="12" x2="21" y2="12"></line>
-            <line x1="8" y1="18" x2="21" y2="18"></line>
-            <line x1="3" y1="6" x2="3.01" y2="6"></line>
-            <line x1="3" y1="12" x2="3.01" y2="12"></line>
-            <line x1="3" y1="18" x2="3.01" y2="18"></line>
-          </svg>
-        </button>
       </div>
 
       <!-- Rosa de los vientos / Compás de orientación -->
@@ -111,68 +101,53 @@
         <span class="compass-label">Argentina</span>
       </div>
 
-      <!-- Leyenda moderna y limpia con destinos -->
-      <div id="mapa-leyenda" class="mapa-leyenda">
-        <div class="leyenda-header-row">
-          <div class="leyenda-titulo">Destino a Sorters:</div>
-          <button class="btn-close-leyenda" onclick="toggleLeyenda()">&times;</button>
-        </div>
-        <div class="leyenda-fila ley-item-bue" onclick="filtrarRutasHub('bue')">
-          <span class="leyenda-linea linea-bue"></span>
-          <span>A <strong>CTP BUE</strong> (Monte Grande)</span>
-        </div>
-        <div class="leyenda-fila ley-item-cordoba" onclick="filtrarRutasHub('cordoba')">
-          <span class="leyenda-linea linea-cordoba"></span>
-          <span>A <strong>CLOG Córdoba</strong></span>
-        </div>
-        <div class="leyenda-fila ley-item-santafe" onclick="filtrarRutasHub('santa_fe')">
-          <span class="leyenda-linea linea-santafe"></span>
-          <span>A <strong>CLOG Santa Fe</strong></span>
-        </div>
-        <div class="leyenda-fila ley-item-amba" id="ley-fila-amba" style="display: none;" onclick="filtrarRutasHub('amba')">
-          <span class="leyenda-linea linea-amba"></span>
-          <span>Flujo AMBA a <strong>CTP BUE</strong></span>
-        </div>
-        <div class="leyenda-fila ley-item-ltn" id="ley-fila-ltn" style="display: none;" onclick="subfiltrarLineasTroncales('LTN')">
-          <span class="leyenda-linea linea-ltn"></span>
-          <span>Líneas <strong>LTN</strong> (Nacionales desde CTP BUE)</span>
-        </div>
-        <div class="leyenda-fila ley-item-ltc" id="ley-fila-ltc" style="display: none;" onclick="subfiltrarLineasTroncales('LTC')">
-          <span class="leyenda-linea linea-ltc"></span>
-          <span>Líneas <strong>LTC</strong> (Transversales / Interiores)</span>
-        </div>
-        <div class="leyenda-separador"></div>
-        <div class="leyenda-fila">
-          <span class="leyenda-dot dot-hub-star">★</span>
-          <span>Plantas Sorter / Cabeceras</span>
-        </div>
-        <div class="leyenda-fila">
-          <span class="leyenda-dot dot-nodo-clog"></span>
-          <span>Centros Logísticos de Origen</span>
-        </div>
-      </div>
-
       <!-- Banner Informativo AMBA (aparece al activar modo AMBA) -->
       <div id="banner-modo-amba" class="banner-modo-amba" style="display: none;">
         <div class="banner-amba-content">
-          <span class="badge-amba-live">ÁREA METROPOLITANA</span>
-          <span>Visualizando los 5 centros del AMBA y sus derivaciones al <strong>CTP BUE (Monte Grande)</strong></span>
+          <span class="badge-amba-live">AMBA</span>
+          <span>5 centros y derivaciones a <strong>CTP BUE</strong></span>
         </div>
-        <button class="btn-volver-nacional" onclick="filtrarRutasHub('todos')">Volver a Vista Nacional</button>
+        <button class="btn-cerrar-banner-ltn" onclick="filtrarRutasHub('todos')" title="Cerrar">✕</button>
       </div>
 
-      <!-- Banner Informativo LTN / LTC (aparece al activar modo Líneas LTN/LTC) -->
-      <div id="banner-modo-ltn" class="banner-modo-amba banner-modo-ltn" style="display: none;">
-        <div class="banner-amba-content">
-          <span class="badge-amba-live badge-ltn-live">RED TRONCAL</span>
-          <span id="banner-ltn-texto">Visualizando <strong>23 Líneas LTN</strong> (Azul) y <strong>5 Líneas LTC</strong> (Ámbar)</span>
-        </div>
+      <!-- Barra de Opciones Compacta LTN / LTC (no obstruye el mapa) -->
+      <div id="banner-modo-ltn" class="banner-modo-ltn-compact" style="display: none;">
         <div class="subfiltros-ltn-wrap">
           <button class="btn-subfiltro-ltn activa" id="btn-sub-todas" onclick="subfiltrarLineasTroncales('todas')">Todas (28)</button>
-          <button class="btn-subfiltro-ltn" id="btn-sub-ltn" onclick="subfiltrarLineasTroncales('LTN')">Solo LTN (23)</button>
-          <button class="btn-subfiltro-ltn" id="btn-sub-ltc" onclick="subfiltrarLineasTroncales('LTC')">Solo LTC (5)</button>
+          <button class="btn-subfiltro-ltn" id="btn-sub-ltn" onclick="subfiltrarLineasTroncales('LTN')">LTN (23)</button>
+          <button class="btn-subfiltro-ltn" id="btn-sub-ltc" onclick="subfiltrarLineasTroncales('LTC')">LTC (5)</button>
         </div>
-        <button class="btn-volver-nacional" onclick="filtrarRutasHub('todos')">Volver a Sorters</button>
+        <div class="linea-select-wrap">
+          <select id="select-linea-troncal" class="select-linea-troncal" onchange="seleccionarLineaTroncalDesdeSelect(this.value)">
+            <option value="">🔍 Filtrar línea...</option>
+          </select>
+        </div>
+        <button class="btn-cerrar-banner-ltn" onclick="filtrarRutasHub('todos')" title="Volver a Sorters">✕</button>
+      </div>
+
+      <!-- Tarjeta Flotante de Inspección de Línea Destacada -->
+      <div id="card-linea-detalle" class="card-linea-detalle" style="display: none;">
+        <div class="card-linea-header">
+          <div class="card-linea-title-wrap">
+            <span id="card-linea-badge" class="badge-linea-code">LTN01</span>
+            <span id="card-linea-tipo" class="badge-linea-type">Red LTN</span>
+          </div>
+          <button class="btn-card-close" onclick="deseleccionarLineaTroncal()" title="Cerrar">&times;</button>
+        </div>
+        <div class="card-linea-body">
+          <div class="card-linea-stats">
+            <div class="stat-item">
+              <span class="stat-label">Unidad</span>
+              <span id="card-linea-unidad" class="stat-val">SEMI FURGÓN</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Distancia</span>
+              <span id="card-linea-km" class="stat-val">2.606 km</span>
+            </div>
+          </div>
+          <div class="card-linea-itinerario-title">Trazado e Itinerario con Paradas:</div>
+          <div id="card-linea-itinerario-steps" class="card-linea-steps"></div>
+        </div>
       </div>
 
       <!-- Hint discreto inferior -->
