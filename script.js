@@ -5,7 +5,6 @@
 
 // =============================================================
 // 1. DATASET DE NODOS LOGÍSTICOS
-// Tipos: 'CLOG' | 'Hub Sorter' | 'Sucursal'
 // =============================================================
 const nodosData = [
   // ====================================================
@@ -350,7 +349,7 @@ const nodosMetropolitanos = [
     piezasDia: "28.000",
     operatividad: "24 / 7",
     fotos: ["imagenes/placeholder.jpg"],
-    desc: "Centro Logístico CABA Sur en Barracas, Capital Federal. Cobertura metropolitana de CABA y conexión con el sur bonaerense."
+    desc: "Centro Logístico CABA Sur en Barracas, Capital Federal."
   },
   {
     id: "vte_lopez",
@@ -365,7 +364,7 @@ const nodosMetropolitanos = [
     piezasDia: "24.500",
     operatividad: "24 / 7",
     fotos: ["imagenes/placeholder.jpg"],
-    desc: "Centro Logístico Vicente López en Olivos, eje del corredor norte del Conurbano."
+    desc: "Centro Logístico Vicente López en Olivos, eje norte del Conurbano."
   },
   {
     id: "mercado_central",
@@ -395,7 +394,7 @@ const nodosMetropolitanos = [
     piezasDia: "21.000",
     operatividad: "24 / 7",
     fotos: ["imagenes/placeholder.jpg"],
-    desc: "Centro Logístico Quilmes Oeste, articulador del corredor sur del Conurbano Bonaerense."
+    desc: "Centro Logístico Quilmes Oeste, eje sur del Conurbano Bonaerense."
   },
   {
     id: "moreno",
@@ -410,7 +409,7 @@ const nodosMetropolitanos = [
     piezasDia: "22.000",
     operatividad: "24 / 7",
     fotos: ["imagenes/placeholder.jpg"],
-    desc: "Centro Logístico Moreno, corredor oeste del Conurbano Bonaerense sobre la RN 7."
+    desc: "Centro Logístico Moreno, corredor oeste sobre RN 7."
   }
 ];
 
@@ -433,25 +432,24 @@ let markersLayerGroup = null;
 let filtroHubActivo = "todos";
 let nodoSeleccionado = null;
 
-// Bounding box inicial para Argentina continental (exacto de mapa-logistica)
+// Bounding box inicial para Argentina continental
 const BND_ARGENTINA = [
   [-55.1, -73.6],
   [-21.8, -53.6]
 ];
 
-// Bounding box para enfocar AMBA
+// Bounding box para AMBA
 const BND_AMBA = [
   [-34.88, -58.88],
   [-34.45, -58.20]
 ];
 
-// Helper para buscar nodo
 function buscarNodoPorId(id) {
   return nodosData.find(n => n.id === id) || nodosMetropolitanos.find(n => n.id === id) || null;
 }
 
 // =============================================================
-// 3. INICIALIZACIÓN DEL MAPA LEAFLET (Estilo mapa-logistica)
+// 3. INICIALIZACIÓN DEL MAPA LEAFLET
 // =============================================================
 document.addEventListener("DOMContentLoaded", () => {
   inicializarMapaLeaflet();
@@ -462,11 +460,10 @@ function inicializarMapaLeaflet() {
   const container = document.getElementById("mapa-leaflet");
   if (!container) return;
 
-  // Crear mapa Leaflet sin controles de zoom por defecto
   leafletMap = L.map("mapa-leaflet", {
     zoomControl: false,
     attributionControl: true,
-    minZoom: 4.2,
+    minZoom: 3.5,
     maxZoom: 19,
     bounceAtZoomLimits: true,
     maxBounds: [
@@ -476,20 +473,7 @@ function inicializarMapaLeaflet() {
     maxBoundsViscosity: 0.95
   });
 
-  // Ajustar vista inicial para abarcar Argentina con encuadre óptimo
-  leafletMap.fitBounds(BND_ARGENTINA, {
-    padding: [10, 10]
-  });
-
-  // Fijar zoom mínimo para encuadre limpio
-  setTimeout(() => {
-    if (leafletMap) {
-      const zNac = leafletMap.getZoom();
-      leafletMap.setMinZoom(Math.max(4.0, zNac - 0.5));
-    }
-  }, 150);
-
-  // Crear paneles z-index dedicados para capas ordenadas
+  // Crear paneles z-index dedicados
   leafletMap.createPane("mascaraPane");
   leafletMap.getPane("mascaraPane").style.zIndex = 350;
   leafletMap.getPane("mascaraPane").style.pointerEvents = "none";
@@ -503,22 +487,36 @@ function inicializarMapaLeaflet() {
   leafletMap.createPane("markersPane");
   leafletMap.getPane("markersPane").style.zIndex = 460;
 
-  // Capa Base: CartoDB Positron (estética limpia y sobria para Correo Argentino)
+  // Capa Base: CartoDB Positron
   L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png?key=cb1_47km_1_a9a7e15ee94d196eec40bf56", {
     maxZoom: 19,
     subdomains: "abcd",
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank">CARTO</a>'
   }).addTo(leafletMap);
 
-  // Grupos de capas
   rutasLayerGroup = L.layerGroup().addTo(leafletMap);
   markersLayerGroup = L.layerGroup().addTo(leafletMap);
 
-  // Cargar máscara exterior y límites de provincias argentinas
+  // Cargar máscara exterior y provincias
   cargarCapaProvincias();
 
-  // Renderizar rutas y marcadores iniciales
+  // Renderizar rutas y marcadores
   renderizarTodo();
+
+  // Ajustar encuadre de forma segura tras asegurar el renderizado
+  setTimeout(() => {
+    if (leafletMap) {
+      leafletMap.invalidateSize();
+      leafletMap.fitBounds(BND_ARGENTINA, { padding: [12, 12] });
+    }
+  }, 100);
+
+  setTimeout(() => {
+    if (leafletMap) {
+      leafletMap.invalidateSize();
+      leafletMap.fitBounds(BND_ARGENTINA, { padding: [12, 12] });
+    }
+  }, 350);
 
   // Click en mapa vacío deselecciona
   leafletMap.on("click", (e) => {
@@ -527,17 +525,13 @@ function inicializarMapaLeaflet() {
     }
   });
 
-  // ResizeObserver para mantener mapa adaptado
-  if (window.ResizeObserver) {
-    const ro = new ResizeObserver(() => {
-      if (leafletMap) leafletMap.invalidateSize();
-    });
-    ro.observe(container);
-  }
+  window.addEventListener("resize", () => {
+    if (leafletMap) leafletMap.invalidateSize();
+  });
 }
 
 // =============================================================
-// 4. MÁSCARA EXTERIOR Y PROVINCIAS (Mismo algoritmo de mapa-logistica)
+// 4. MÁSCARA EXTERIOR Y PROVINCIAS
 // =============================================================
 function cargarCapaProvincias() {
   const geojson = (typeof GEOJSON_ARGENTINA !== "undefined" && GEOJSON_ARGENTINA) ? GEOJSON_ARGENTINA : null;
@@ -584,7 +578,6 @@ function crearMascaraExterior(geojson) {
     }
   });
 
-  // Polígono invertido con el color del dashboard (#d0dcea)
   mascaraExteriorLayer = L.polygon([worldOuter, ...huecos], {
     pane: "mascaraPane",
     fillColor: "#d0dcea",
@@ -617,9 +610,9 @@ function dibujarProvincias(geojson) {
           const l = e.target;
           l.setStyle({
             fillColor: "#002554",
-            fillOpacity: 0.10,
+            fillOpacity: 0.08,
             color: "#FFD200",
-            weight: 2.2,
+            weight: 2.0,
             opacity: 1.0
           });
           if (nombre) {
@@ -631,7 +624,7 @@ function dibujarProvincias(geojson) {
           }
         },
         mouseout: (e) => {
-          geojsonLayer.resetStyle(e.target);
+          if (geojsonLayer) geojsonLayer.resetStyle(e.target);
         }
       });
     }
@@ -641,7 +634,7 @@ function dibujarProvincias(geojson) {
 // =============================================================
 // 5. CÁLCULO DE CURVAS BÉZIER PARA FLUJOS LOGÍSTICOS
 // =============================================================
-function generarPuntosCurva(p1, p2, curvatura = 0.15, numPuntos = 24) {
+function generarPuntosCurva(p1, p2, curvatura = 0.12, numPuntos = 24) {
   const [lat1, lng1] = p1;
   const [lat2, lng2] = p2;
 
@@ -651,7 +644,6 @@ function generarPuntosCurva(p1, p2, curvatura = 0.15, numPuntos = 24) {
   const dLat = lat2 - lat1;
   const dLng = lng2 - lng1;
 
-  // Vector perpendicular
   const ctrlLat = midLat - dLng * curvatura;
   const ctrlLng = midLng + dLat * curvatura;
 
@@ -676,13 +668,11 @@ function renderizarTodo() {
 
   const esModoAMBA = (filtroHubActivo === "amba");
   
-  // Elementos UI
   const bannerAMBA = document.getElementById("banner-modo-amba");
   const leyFilaAMBA = document.getElementById("ley-fila-amba");
   if (bannerAMBA) bannerAMBA.style.display = esModoAMBA ? "flex" : "none";
   if (leyFilaAMBA) leyFilaAMBA.style.display = esModoAMBA ? "flex" : "none";
 
-  // Determinar conjunto de rutas y nodos
   let rutasActuales = [];
   let nodosAMostrar = [];
 
@@ -695,7 +685,6 @@ function renderizarTodo() {
       nodosAMostrar = nodosData;
     } else {
       rutasActuales = rutasExcel.filter(r => r.hub === filtroHubActivo);
-      // Nodos que participan en estas rutas + el hub
       const idsParticipantes = new Set();
       rutasActuales.forEach(r => {
         idsParticipantes.add(r.origen);
@@ -714,44 +703,39 @@ function renderizarTodo() {
     const p1 = [origen.lat, origen.lng];
     const p2 = [destino.lat, destino.lng];
 
-    // Factor de curvatura suave
-    const factorCurva = (r.hub === "cordoba") ? 0.12 : (r.hub === "santa_fe") ? -0.14 : 0.10;
-    const puntosCurva = generarPuntosCurva(p1, p2, factorCurva, 26);
+    const factorCurva = (r.hub === "cordoba") ? 0.10 : (r.hub === "santa_fe") ? -0.12 : 0.08;
+    const puntosCurva = generarPuntosCurva(p1, p2, factorCurva, 24);
 
-    // Línea base sólida de color
     const polylineBase = L.polyline(puntosCurva, {
       pane: "rutasPane",
       color: r.color || "#0066FF",
-      weight: esModoAMBA ? 4.5 : 3.2,
+      weight: esModoAMBA ? 4.0 : 3.0,
       opacity: 0.85,
       lineCap: "round",
       lineJoin: "round"
     });
 
-    // Línea animada de flujo punteado (dash)
     const polylineDash = L.polyline(puntosCurva, {
       pane: "rutasPane",
       color: "#ffffff",
-      weight: esModoAMBA ? 2.5 : 1.8,
+      weight: esModoAMBA ? 2.2 : 1.6,
       opacity: 0.9,
       className: "ruta-flow-dash",
       lineCap: "round"
     });
 
-    // Tooltip interactivo al posar el mouse sobre la ruta
     const tooltipText = `
       <div class="popup-route-title">${r.nombre}</div>
       <div class="popup-route-sub">${origen.nombre} ➔ ${destino.nombreCompleto || destino.nombre}</div>
-      ${r.distancia ? `<div style="font-size:11px; font-weight:700; color:#4338ca; margin-top:2px;">Distancia aprox: ${r.distancia}</div>` : ''}
+      ${r.distancia ? `<div style="font-size:10.5px; font-weight:700; color:#4338ca; margin-top:2px;">Distancia aprox: ${r.distancia}</div>` : ''}
     `;
 
     polylineBase.bindTooltip(tooltipText, { sticky: true, className: "tooltip-ruta" });
     polylineDash.bindTooltip(tooltipText, { sticky: true, className: "tooltip-ruta" });
 
-    // Hover effect en ruta
     const resaltarRuta = (hover) => {
       polylineBase.setStyle({
-        weight: hover ? 5.5 : (esModoAMBA ? 4.5 : 3.2),
+        weight: hover ? 5.0 : (esModoAMBA ? 4.0 : 3.0),
         color: hover ? "#FFD200" : (r.color || "#0066FF"),
         opacity: hover ? 1.0 : 0.85
       });
@@ -762,7 +746,6 @@ function renderizarTodo() {
     polylineDash.on("mouseover", () => resaltarRuta(true));
     polylineDash.on("mouseout", () => resaltarRuta(false));
 
-    // Click en la ruta abre el origen
     polylineBase.on("click", (e) => {
       L.DomEvent.stopPropagation(e);
       abrirModalDetalle(origen);
@@ -781,9 +764,10 @@ function renderizarTodo() {
     if (!n.lat || !n.lng) return;
 
     if (n.esHub) {
-      // Sorter Hub: Marcador estelar prominente con halo pulsante
       const hubIcon = L.divIcon({
         className: "leaflet-hub-icon",
+        iconSize: [0, 0],
+        iconAnchor: [0, 0],
         html: `
           <div class="custom-hub-marker hub-${n.hubKey || 'bue'}">
             <div class="hub-pulse"></div>
@@ -793,9 +777,7 @@ function renderizarTodo() {
               <span class="hub-tag">Sorter</span>
             </div>
           </div>
-        `,
-        iconSize: [120, 36],
-        iconAnchor: [14, 18]
+        `
       });
 
       const marker = L.marker([n.lat, n.lng], {
@@ -812,23 +794,24 @@ function renderizarTodo() {
       markersLayerGroup.addLayer(marker);
 
     } else {
-      // CLOG Origen: Marcador moderno con pill y color de destino
       let destKey = "bue";
       const rutaNodo = (esModoAMBA ? rutasMetropolitanas : rutasExcel).find(r => r.origen === n.id);
       if (rutaNodo) destKey = rutaNodo.hub;
 
+      const estaSel = (nodoSeleccionado?.id === n.id);
+
       const clogIcon = L.divIcon({
         className: "leaflet-clog-icon",
+        iconSize: [0, 0],
+        iconAnchor: [0, 0],
         html: `
-          <div class="custom-clog-marker dest-${destKey} ${nodoSeleccionado?.id === n.id ? 'seleccionado' : ''}">
+          <div class="clog-marker-wrap dest-${destKey} ${estaSel ? 'seleccionado' : ''}" data-id="${n.id}">
             <div class="clog-marker-dot"></div>
             <div class="clog-marker-pill">
               <span class="pill-name">${n.nombre}</span>
             </div>
           </div>
-        `,
-        iconSize: [100, 24],
-        iconAnchor: [7, 12]
+        `
       });
 
       const marker = L.marker([n.lat, n.lng], {
@@ -853,40 +836,22 @@ function renderizarTodo() {
 function filtrarRutasHub(hubKey) {
   filtroHubActivo = hubKey;
 
-  // Actualizar botones de filtro
   document.querySelectorAll(".btn-filtro-ruta").forEach(btn => {
     btn.classList.toggle("activa", btn.getAttribute("data-hub") === hubKey);
   });
 
-  // Re-renderizar capas de rutas y marcadores
   renderizarTodo();
 
-  // Ajustar cámara suavemente
   if (hubKey === "amba") {
-    leafletMap.flyToBounds(BND_AMBA, {
-      duration: 1.2,
-      padding: [30, 30]
-    });
+    leafletMap.flyToBounds(BND_AMBA, { duration: 1.0, padding: [25, 25] });
   } else if (hubKey === "cordoba") {
-    leafletMap.flyToBounds([[-35.0, -69.5], [-23.5, -61.0]], {
-      duration: 1.1,
-      padding: [20, 20]
-    });
+    leafletMap.flyToBounds([[-35.0, -69.5], [-23.5, -61.0]], { duration: 1.0, padding: [20, 20] });
   } else if (hubKey === "santa_fe") {
-    leafletMap.flyToBounds([[-34.0, -62.5], [-26.0, -54.5]], {
-      duration: 1.1,
-      padding: [20, 20]
-    });
+    leafletMap.flyToBounds([[-34.0, -62.5], [-26.0, -54.5]], { duration: 1.0, padding: [20, 20] });
   } else if (hubKey === "bue") {
-    leafletMap.flyToBounds([[-55.5, -73.0], [-33.5, -56.5]], {
-      duration: 1.2,
-      padding: [20, 20]
-    });
+    leafletMap.flyToBounds([[-55.5, -73.0], [-33.5, -56.5]], { duration: 1.1, padding: [20, 20] });
   } else {
-    leafletMap.flyToBounds(BND_ARGENTINA, {
-      duration: 1.2,
-      padding: [10, 10]
-    });
+    leafletMap.flyToBounds(BND_ARGENTINA, { duration: 1.1, padding: [12, 12] });
   }
 }
 
@@ -903,7 +868,6 @@ function abrirModalDetalle(nodo) {
   const panel = document.getElementById("modal-detalle");
   if (!panel) return;
 
-  // Actualizar textos y badges
   document.getElementById("modal-nodo-tipo").textContent = nodo.tipo || "CLOG";
   document.getElementById("modal-nodo-provincia").textContent = nodo.provincia || "Argentina";
   document.getElementById("modal-nodo-nombre").textContent = nodo.nombreCompleto || nodo.nombre;
@@ -914,7 +878,6 @@ function abrirModalDetalle(nodo) {
   document.getElementById("modal-kpi-operatividad").textContent = nodo.operatividad || "24 / 7";
   document.getElementById("modal-nodo-desc").textContent = nodo.desc || "Planta operativa estratégica de la Red Nacional.";
 
-  // Bloque Destino Sorter / Orígenes
   const bloqueDestino = document.getElementById("modal-bloque-destino");
   const bloqueHubOrigenes = document.getElementById("modal-hub-origenes-box");
 
@@ -954,16 +917,13 @@ function abrirModalDetalle(nodo) {
     }
   }
 
-  // Galería de fotos
   fotosGaleriaActual = (Array.isArray(nodo.fotos) && nodo.fotos.length > 0) ? nodo.fotos : ["imagenes/placeholder.jpg"];
   fotoActualIdx = 0;
   renderizarGaleria();
 
-  // Mostrar modal y backdrop
   if (backdrop) backdrop.style.display = "block";
   panel.style.display = "flex";
 
-  // Re-renderizar marcadores para reflejar selección
   renderizarTodo();
 }
 
@@ -1031,7 +991,7 @@ function configurarBuscador() {
     });
 
     if (resultados.length === 0) {
-      dropdown.innerHTML = `<div style="padding: 12px; font-size:12px; color:#64748b; text-align:center;">No se encontraron plantas.</div>`;
+      dropdown.innerHTML = `<div style="padding: 10px; font-size:11.5px; color:#64748b; text-align:center;">No se encontraron plantas.</div>`;
       dropdown.style.display = "block";
       return;
     }
@@ -1057,7 +1017,6 @@ function configurarBuscador() {
     dropdown.style.display = "block";
   });
 
-  // Cerrar dropdown al hacer click afuera
   document.addEventListener("click", (e) => {
     if (!input.contains(e.target) && !dropdown.contains(e.target)) {
       dropdown.style.display = "none";
@@ -1068,19 +1027,16 @@ function configurarBuscador() {
 function seleccionarDesdeBuscador(nodo) {
   if (!nodo || !leafletMap) return;
 
-  // Si es un nodo de AMBA y no estamos en AMBA, activar vista AMBA
   if (nodo.esMetropolitano && filtroHubActivo !== "amba") {
     filtrarRutasHub("amba");
   } else if (!nodo.esMetropolitano && filtroHubActivo === "amba") {
     filtrarRutasHub("todos");
   }
 
-  // Volar hacia la planta
   leafletMap.flyTo([nodo.lat, nodo.lng], Math.max(leafletMap.getZoom(), 8), {
-    duration: 1.2
+    duration: 1.0
   });
 
-  // Abrir modal de detalles
   abrirModalDetalle(nodo);
 }
 
@@ -1094,7 +1050,7 @@ function limpiarBuscador() {
 }
 
 // =============================================================
-// 10. CONTROLES DE ZOOM FLOTANTES
+// 10. CONTROLES DE ZOOM Y LEYENDA
 // =============================================================
 function zoomIn() {
   if (leafletMap) leafletMap.zoomIn();
@@ -1107,9 +1063,14 @@ function zoomOut() {
 function zoomReset() {
   if (leafletMap) {
     if (filtroHubActivo === "amba") {
-      leafletMap.flyToBounds(BND_AMBA, { duration: 1.0, padding: [30, 30] });
+      leafletMap.flyToBounds(BND_AMBA, { duration: 1.0, padding: [25, 25] });
     } else {
-      leafletMap.flyToBounds(BND_ARGENTINA, { duration: 1.0, padding: [10, 10] });
+      leafletMap.flyToBounds(BND_ARGENTINA, { duration: 1.0, padding: [12, 12] });
     }
   }
+}
+
+function toggleLeyenda() {
+  const ley = document.getElementById("mapa-leyenda");
+  if (ley) ley.classList.toggle("oculta");
 }
