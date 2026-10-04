@@ -52,6 +52,9 @@
       <button class="btn-filtro-ruta btn-amba" data-hub="amba" onclick="filtrarRutasHub('amba')">
         <span class="dot-filtro dot-amba"></span> AMBA (5)
       </button>
+      <button class="btn-filtro-ruta btn-ltn" id="btn-filtro-ltn" data-hub="ltn" ondblclick="activarModoLTN()" onclick="manejarClickLTN(event)" title="Doble click para visualizar Líneas LTN / LTC">
+        <span class="dot-filtro dot-ltn"></span> Líneas LTN / LTC <span class="badge-dblclick">2x click</span>
+      </button>
     </div>
 
     <div class="topbar-right">
@@ -130,10 +133,18 @@
           <span class="leyenda-linea linea-amba"></span>
           <span>Flujo AMBA a <strong>CTP BUE</strong></span>
         </div>
+        <div class="leyenda-fila ley-item-ltn" id="ley-fila-ltn" style="display: none;" onclick="subfiltrarLineasTroncales('LTN')">
+          <span class="leyenda-linea linea-ltn"></span>
+          <span>Líneas <strong>LTN</strong> (Nacionales desde CTP BUE)</span>
+        </div>
+        <div class="leyenda-fila ley-item-ltc" id="ley-fila-ltc" style="display: none;" onclick="subfiltrarLineasTroncales('LTC')">
+          <span class="leyenda-linea linea-ltc"></span>
+          <span>Líneas <strong>LTC</strong> (Transversales / Interiores)</span>
+        </div>
         <div class="leyenda-separador"></div>
         <div class="leyenda-fila">
           <span class="leyenda-dot dot-hub-star">★</span>
-          <span>Plantas Sorter Destino</span>
+          <span>Plantas Sorter / Cabeceras</span>
         </div>
         <div class="leyenda-fila">
           <span class="leyenda-dot dot-nodo-clog"></span>
@@ -150,9 +161,23 @@
         <button class="btn-volver-nacional" onclick="filtrarRutasHub('todos')">Volver a Vista Nacional</button>
       </div>
 
+      <!-- Banner Informativo LTN / LTC (aparece al activar modo Líneas LTN/LTC) -->
+      <div id="banner-modo-ltn" class="banner-modo-amba banner-modo-ltn" style="display: none;">
+        <div class="banner-amba-content">
+          <span class="badge-amba-live badge-ltn-live">RED TRONCAL</span>
+          <span id="banner-ltn-texto">Visualizando <strong>23 Líneas LTN</strong> (Azul) y <strong>5 Líneas LTC</strong> (Ámbar)</span>
+        </div>
+        <div class="subfiltros-ltn-wrap">
+          <button class="btn-subfiltro-ltn activa" id="btn-sub-todas" onclick="subfiltrarLineasTroncales('todas')">Todas (28)</button>
+          <button class="btn-subfiltro-ltn" id="btn-sub-ltn" onclick="subfiltrarLineasTroncales('LTN')">Solo LTN (23)</button>
+          <button class="btn-subfiltro-ltn" id="btn-sub-ltc" onclick="subfiltrarLineasTroncales('LTC')">Solo LTC (5)</button>
+        </div>
+        <button class="btn-volver-nacional" onclick="filtrarRutasHub('todos')">Volver a Sorters</button>
+      </div>
+
       <!-- Hint discreto inferior -->
       <div class="mapa-hint-bottom">
-        <span>Rutas de derivación de mercadería hacia Sorters de Correo Argentino • Hacé click en cualquier nodo para ver sus detalles</span>
+        <span id="mapa-hint-texto">Rutas de derivación de mercadería hacia Sorters de Correo Argentino • Hacé click en cualquier nodo para ver sus detalles</span>
       </div>
 
     </div>

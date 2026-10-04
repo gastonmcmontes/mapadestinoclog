@@ -186,6 +186,38 @@ body.vista-mapa-limpio {
 .dot-cordoba  { background-color: var(--hub-cordoba); box-shadow: 0 0 5px var(--hub-cordoba); }
 .dot-santafe  { background-color: var(--hub-santafe); box-shadow: 0 0 5px var(--hub-santafe); }
 .dot-amba     { background-color: var(--hub-amba); box-shadow: 0 0 5px var(--hub-amba); }
+.dot-ltn      { background-color: #78B4E8; box-shadow: 0 0 4px #78B4E8; }
+
+.btn-filtro-ruta.btn-ltn {
+  border-color: rgba(120, 180, 232, 0.45);
+  background: linear-gradient(135deg, rgba(120, 180, 232, 0.15) 0%, rgba(91, 155, 213, 0.22) 100%);
+  color: #e2f0fc;
+}
+.btn-filtro-ruta.btn-ltn:hover {
+  background: linear-gradient(135deg, rgba(120, 180, 232, 0.28) 0%, rgba(91, 155, 213, 0.40) 100%);
+  border-color: #78B4E8;
+  color: #ffffff;
+}
+.btn-filtro-ruta.btn-ltn.activa {
+  background: #ffffff !important;
+  color: #1e5a96 !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 0 10px rgba(120, 180, 232, 0.5);
+}
+.badge-dblclick {
+  background-color: rgba(255, 255, 255, 0.18);
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+.btn-filtro-ruta.btn-ltn.activa .badge-dblclick {
+  background-color: #ebf5fe;
+  color: #1e5a96;
+  border-color: #b9dcfa;
+}
 
 /* Buscador Global */
 .topbar-right {
@@ -478,6 +510,8 @@ body.vista-mapa-limpio {
 .linea-cordoba  { background-color: var(--hub-cordoba); }
 .linea-santafe  { background-color: var(--hub-santafe); }
 .linea-amba     { background-color: var(--hub-amba); }
+.linea-ltn      { background-color: #1D70B8; height: 3px; }
+.linea-ltc      { background-color: #E67E22; height: 3px; }
 
 .leyenda-separador {
   height: 1px;
@@ -506,7 +540,7 @@ body.vista-mapa-limpio {
   box-shadow: 0 0 3px rgba(0,0,0,0.3);
 }
 
-/* Banner de modo AMBA */
+/* Banner de modo AMBA y LTN */
 .banner-modo-amba {
   position: absolute;
   top: 14px;
@@ -523,6 +557,48 @@ body.vista-mapa-limpio {
   z-index: 50;
   animation: fadeInDown 0.3s ease;
 }
+.banner-modo-ltn {
+  border-color: #93c5fd;
+  box-shadow: 0 6px 20px rgba(29, 112, 184, 0.20);
+}
+.subfiltros-ltn-wrap {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background-color: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 6px;
+}
+.btn-subfiltro-ltn {
+  background: transparent;
+  border: none;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #64748b;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.btn-subfiltro-ltn:hover {
+  color: #0f172a;
+}
+.btn-subfiltro-ltn.activa {
+  background-color: #ffffff;
+  color: #002554;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+.banner-modo-ltn .btn-volver-nacional {
+  background-color: #002554;
+}
+.banner-modo-ltn .btn-volver-nacional:hover {
+  background-color: #063973;
+}
+.badge-ltn-live {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+
 .banner-amba-content {
   display: flex;
   align-items: center;
@@ -689,6 +765,7 @@ body.vista-mapa-limpio {
 .clog-marker-wrap.dest-cordoba .clog-marker-dot  { background-color: var(--hub-cordoba); }
 .clog-marker-wrap.dest-santa_fe .clog-marker-dot { background-color: var(--hub-santafe); }
 .clog-marker-wrap.dest-amba .clog-marker-dot     { background-color: var(--hub-amba); }
+.clog-marker-wrap.dest-ltn .clog-marker-dot      { background-color: #78B4E8; box-shadow: 0 0 3px rgba(120, 180, 232, 0.6); }
 
 .clog-marker-wrap:hover .clog-marker-dot,
 .clog-marker-wrap.seleccionado .clog-marker-dot {
@@ -712,6 +789,7 @@ body.vista-mapa-limpio {
 .clog-marker-wrap.dest-cordoba .clog-marker-pill  { border-left-color: var(--hub-cordoba); }
 .clog-marker-wrap.dest-santa_fe .clog-marker-pill { border-left-color: var(--hub-santafe); }
 .clog-marker-wrap.dest-amba .clog-marker-pill     { border-left-color: var(--hub-amba); }
+.clog-marker-wrap.dest-ltn .clog-marker-pill      { border-left-color: #78B4E8; }
 
 .clog-marker-pill .pill-name {
   font-size: 11.5px;

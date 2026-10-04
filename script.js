@@ -223,6 +223,14 @@ const nodosData = [
     desc: "Nodo del norte bonaerense, articulando el agro con la cadena logística hacia AMBA."
   },
   {
+    id: "pehuajo", nombre: "Pehuajó", nombreCompleto: "CTP Pehuajó",
+    tipo: "CTP", provincia: "Buenos Aires",
+    lat: -35.81, lng: -61.90,
+    capacidad: "4.500 m²", piezasDia: "6.000", operatividad: "L a V",
+    fotos: ["imagenes/metro-pba/Mercedes.jpg"],
+    desc: "Centro de Transferencia Postal en el oeste bonaerense sobre el corredor de la Ruta Nacional 5."
+  },
+  {
     id: "santa_rosa", nombre: "Santa Rosa", nombreCompleto: "CLOG Santa Rosa",
     tipo: "CLOG", provincia: "La Pampa",
     lat: -36.62, lng: -64.29,
@@ -422,6 +430,47 @@ const rutasMetropolitanas = [
 ];
 
 // =============================================================
+// LÍNEAS LTN Y LTC (Red Troncal de Larga Distancia)
+// =============================================================
+const lineasTroncalesData = [
+  // ==========================================
+  // LÍNEAS LTN (Cabecera CTP Monte Grande) - 23 Líneas
+  // ==========================================
+  { codigo: "LTN01", tipoRed: "LTN", unidad: "SEMI FURGON", km: 2606, origen: "ctp_bue", destinos: ["santiago_estero", "tucuman"], color: "#1D70B8" },
+  { codigo: "LTN01 BIS", tipoRed: "LTN", unidad: "SEMI FURGON", km: 1499, origen: "ctp_bue", destinos: ["cordoba"], color: "#1D70B8" },
+  { codigo: "LTN02", tipoRed: "LTN", unidad: "SEMI FURGON", km: 2088, origen: "ctp_bue", destinos: ["resistencia", "corrientes"], color: "#1D70B8" },
+  { codigo: "LTN02 BIS", tipoRed: "LTN", unidad: "SEMI FURGON", km: 1118, origen: "ctp_bue", destinos: ["santa_fe", "parana"], color: "#1D70B8" },
+  { codigo: "LTN03", tipoRed: "LTN", unidad: "SEMI FURGON", km: 2106, origen: "ctp_bue", destinos: ["mendoza"], color: "#1D70B8" },
+  { codigo: "LTN04", tipoRed: "LTN", unidad: "12TN", km: 667, origen: "ctp_bue", destinos: ["mercedes", "pergamino"], color: "#1D70B8" },
+  { codigo: "LTN04 BIS", tipoRed: "LTN", unidad: "12TN", km: 782, origen: "ctp_bue", destinos: ["mercedes", "pehuajo"], color: "#1D70B8" },
+  { codigo: "LTN05", tipoRed: "LTN", unidad: "SEMI FURGON", km: 3409, origen: "ctp_bue", destinos: ["trelew", "comodoro_rivadavia"], color: "#1D70B8" },
+  { codigo: "LTN06", tipoRed: "LTN", unidad: "SEMI FURGON", km: 877, origen: "ctp_bue", destinos: ["mar_del_plata"], color: "#1D70B8" },
+  { codigo: "LTN07", tipoRed: "LTN", unidad: "SEMI FURGON", km: 2380, origen: "ctp_bue", destinos: ["neuquen"], color: "#1D70B8" },
+  { codigo: "LTN08", tipoRed: "LTN", unidad: "SEMI FURGON", km: 180, origen: "ctp_bue", destinos: ["la_plata"], color: "#1D70B8" },
+  { codigo: "LTN09", tipoRed: "LTN", unidad: "SEMI FURGON", km: 1238, origen: "ctp_bue", destinos: ["bahia_blanca"], color: "#1D70B8" },
+  { codigo: "LTN10", tipoRed: "LTN", unidad: "12TN", km: 541, origen: "ctp_bue", destinos: ["pergamino"], color: "#1D70B8" },
+  { codigo: "LTN11", tipoRed: "LTN", unidad: "SEMI FURGON", km: 652, origen: "ctp_bue", destinos: ["rosario"], color: "#1D70B8" },
+  { codigo: "LTN12", tipoRed: "LTN", unidad: "SEMI FURGON", km: 4957, origen: "ctp_bue", destinos: ["rio_gallegos"], color: "#1D70B8" },
+  { codigo: "LTN13", tipoRed: "LTN", unidad: "SEMI FURGON", km: 2425, origen: "ctp_bue", destinos: ["cordoba", "la_rioja"], color: "#1D70B8" },
+  { codigo: "LTN14", tipoRed: "LTN", unidad: "SEMI FURGON", km: 1247, origen: "ctp_bue", destinos: ["santa_rosa"], color: "#1D70B8" },
+  { codigo: "LTN15", tipoRed: "LTN", unidad: "SEMI FURGON", km: 2299, origen: "ctp_bue", destinos: ["corrientes", "posadas"], color: "#1D70B8" },
+  { codigo: "LTN16", tipoRed: "LTN", unidad: "SEMI FURGON", km: 1744, origen: "ctp_bue", destinos: ["rio_cuarto", "san_luis"], color: "#1D70B8" },
+  { codigo: "LTN17", tipoRed: "LTN", unidad: "SEMI FURGON", km: 3354, origen: "ctp_bue", destinos: ["salta", "jujuy"], color: "#1D70B8" },
+  { codigo: "LTN18", tipoRed: "LTN", unidad: "SEMI FURGON", km: 3145, origen: "ctp_bue", destinos: ["neuquen", "bariloche"], color: "#1D70B8" },
+  { codigo: "LTN20", tipoRed: "LTN", unidad: "SEMI FURGON", km: 1074, origen: "ctp_bue", destinos: ["parana"], color: "#1D70B8" },
+  { codigo: "LTN21", tipoRed: "LTN", unidad: "SEMI FURGON", km: 1499, origen: "ctp_bue", destinos: ["villa_maria", "cordoba"], color: "#1D70B8" },
+
+  // ==========================================
+  // LÍNEAS LTC (Transversales / Interurbanas) - 5 Líneas
+  // ==========================================
+  { codigo: "LTC03", tipoRed: "LTC", unidad: "SEMI FURGON", km: 2164, origen: "rosario", destinos: ["santa_fe", "resistencia", "corrientes", "posadas"], color: "#E67E22" },
+  { codigo: "LTC04", tipoRed: "LTC", unidad: "SEMI FURGON", km: 1222, origen: "cordoba", destinos: ["santiago_estero", "tucuman"], color: "#E67E22" },
+  { codigo: "LTC12", tipoRed: "LTC", unidad: "SEMI FURGON", km: 759, origen: "tucuman", destinos: ["salta", "jujuy"], color: "#E67E22" },
+  { codigo: "LTC13", tipoRed: "LTC", unidad: "SEMI FURGON", km: 900, origen: "rosario", destinos: ["cordoba"], color: "#E67E22" },
+  { codigo: "LTC14", tipoRed: "LTC", unidad: "SEMI FURGON", km: 1050, origen: "cordoba", destinos: ["rio_cuarto", "bahia_blanca"], color: "#E67E22" }
+];
+
+// =============================================================
 // 2. ESTADO GLOBAL Y CONFIGURACIÓN MAPA LEAFLET
 // =============================================================
 let leafletMap = null;
@@ -430,6 +479,8 @@ let mascaraExteriorLayer = null;
 let rutasLayerGroup = null;
 let markersLayerGroup = null;
 let filtroHubActivo = "todos";
+let subfiltroLTN = "todas";
+let lineaLTNDestacada = null;
 let nodoSeleccionado = null;
 
 // Bounding box inicial para Argentina continental
@@ -667,22 +718,220 @@ function renderizarTodo() {
   markersLayerGroup.clearLayers();
 
   const esModoAMBA = (filtroHubActivo === "amba");
+  const esModoLTN = (filtroHubActivo === "ltn");
   
   const bannerAMBA = document.getElementById("banner-modo-amba");
+  const bannerLTN = document.getElementById("banner-modo-ltn");
   const leyFilaAMBA = document.getElementById("ley-fila-amba");
-  if (bannerAMBA) bannerAMBA.style.display = esModoAMBA ? "flex" : "none";
-  if (leyFilaAMBA) leyFilaAMBA.style.display = esModoAMBA ? "flex" : "none";
+  const leyFilaLTN = document.getElementById("ley-fila-ltn");
+  const leyFilaLTC = document.getElementById("ley-fila-ltc");
+  const badgeTotal = document.getElementById("badge-total-rutas");
 
+  if (bannerAMBA) bannerAMBA.style.display = esModoAMBA ? "flex" : "none";
+  if (bannerLTN) bannerLTN.style.display = esModoLTN ? "flex" : "none";
+  if (leyFilaAMBA) leyFilaAMBA.style.display = esModoAMBA ? "flex" : "none";
+  if (leyFilaLTN) leyFilaLTN.style.display = esModoLTN ? "flex" : "none";
+  if (leyFilaLTC) leyFilaLTC.style.display = esModoLTN ? "flex" : "none";
+
+  if (esModoLTN) {
+    let lineasAMostrar = lineasTroncalesData;
+    if (subfiltroLTN === "LTN") {
+      lineasAMostrar = lineasTroncalesData.filter(l => l.tipoRed === "LTN");
+    } else if (subfiltroLTN === "LTC") {
+      lineasAMostrar = lineasTroncalesData.filter(l => l.tipoRed === "LTC");
+    }
+
+    if (badgeTotal) badgeTotal.textContent = `${lineasAMostrar.length} Líneas ${subfiltroLTN !== 'todas' ? subfiltroLTN : 'Troncales'}`;
+
+    // Subfiltros visuales en banner
+    document.querySelectorAll(".btn-subfiltro-ltn").forEach(btn => {
+      const id = btn.id;
+      btn.classList.toggle("activa", 
+        (id === "btn-sub-todas" && subfiltroLTN === "todas") ||
+        (id === "btn-sub-ltn" && subfiltroLTN === "LTN") ||
+        (id === "btn-sub-ltc" && subfiltroLTN === "LTC")
+      );
+    });
+
+    const nodosParticipantesLTN = new Set();
+
+    // 1. Dibujar Rutas de Líneas Troncales LTN y LTC
+    lineasAMostrar.forEach((linea, lineIdx) => {
+      const origNodo = buscarNodoPorId(linea.origen);
+      if (!origNodo) return;
+
+      nodosParticipantesLTN.add(linea.origen);
+
+      const waypoints = [origNodo];
+      linea.destinos.forEach(destId => {
+        const destNodo = buscarNodoPorId(destId);
+        if (destNodo) {
+          waypoints.push(destNodo);
+          nodosParticipantesLTN.add(destId);
+        }
+      });
+
+      if (waypoints.length < 2) return;
+
+      let puntosTotales = [];
+      for (let i = 0; i < waypoints.length - 1; i++) {
+        const p1 = [waypoints[i].lat, waypoints[i].lng];
+        const p2 = [waypoints[i+1].lat, waypoints[i+1].lng];
+        
+        // Curvatura leve alternada según índice para separar trazas superpuestas
+        const curv = ((lineIdx % 3 === 0 ? 0.07 : lineIdx % 3 === 1 ? -0.06 : 0.04) * (i % 2 === 0 ? 1 : -1));
+        const segmento = generarPuntosCurva(p1, p2, curv, 22);
+
+        if (puntosTotales.length === 0) {
+          puntosTotales.push(...segmento);
+        } else {
+          puntosTotales.push(...segmento.slice(1));
+        }
+      }
+
+      const colorLinea = (linea.tipoRed === "LTN") ? "#1D70B8" : "#E67E22";
+
+      const polylineBase = L.polyline(puntosTotales, {
+        pane: "rutasPane",
+        color: colorLinea,
+        weight: 2.3,
+        opacity: 0.85,
+        lineCap: "round",
+        lineJoin: "round"
+      });
+
+      const polylineDash = L.polyline(puntosTotales, {
+        pane: "rutasPane",
+        color: "#ffffff",
+        weight: 1.2,
+        opacity: 0.70,
+        className: "ruta-flow-dash",
+        lineCap: "round"
+      });
+
+      const destinosStr = waypoints.slice(1).map(w => w.nombreCompleto || w.nombre).join(" ➔ ");
+      const tooltipText = `
+        <div class="popup-route-title" style="color:${colorLinea}; font-size:12.5px; font-weight:800;">
+          LÍNEA ${linea.codigo} (${linea.tipoRed}) — ${linea.unidad}
+        </div>
+        <div class="popup-route-sub" style="font-weight:600; color:#002554; margin-top:2px;">
+          📍 Origen: <strong>${origNodo.nombreCompleto || origNodo.nombre}</strong><br>
+          ➔ Destinos: <strong>${destinosStr}</strong>
+        </div>
+        ${linea.km ? `<div style="font-size:11px; font-weight:800; color:${colorLinea}; margin-top:4px;">Distancia de itinerario: ${linea.km.toLocaleString()} km</div>` : ''}
+      `;
+
+      polylineBase.bindTooltip(tooltipText, { sticky: true, className: "tooltip-ruta" });
+      polylineDash.bindTooltip(tooltipText, { sticky: true, className: "tooltip-ruta" });
+
+      const clickAction = (e) => {
+        L.DomEvent.stopPropagation(e);
+        abrirModalDetalle(origNodo);
+      };
+
+      const hoverAction = (hover) => {
+        polylineBase.setStyle({
+          weight: hover ? 4.2 : 2.3,
+          color: hover ? "#FFD200" : colorLinea,
+          opacity: hover ? 1.0 : 0.85
+        });
+      };
+
+      polylineBase.on("mouseover", () => hoverAction(true));
+      polylineBase.on("mouseout", () => hoverAction(false));
+      polylineDash.on("mouseover", () => hoverAction(true));
+      polylineDash.on("mouseout", () => hoverAction(false));
+
+      polylineBase.on("click", clickAction);
+      polylineDash.on("click", clickAction);
+
+      rutasLayerGroup.addLayer(polylineBase);
+      rutasLayerGroup.addLayer(polylineDash);
+    });
+
+    // 2. Dibujar Marcadores
+    nodosData.forEach(n => {
+      if (!n.lat || !n.lng) return;
+
+      const esParticipante = nodosParticipantesLTN.has(n.id);
+      const estaSel = (nodoSeleccionado?.id === n.id);
+
+      if (n.id === "ctp_bue") {
+        const hubIcon = L.divIcon({
+          className: "leaflet-hub-icon",
+          iconSize: [0, 0],
+          iconAnchor: [0, 0],
+          html: `
+            <div class="custom-hub-marker hub-bue">
+              <div class="hub-pulse" style="background-color: rgba(29, 112, 184, 0.40);"></div>
+              <div class="hub-icon-inner" style="background:#002554; border-color:#1D70B8; color:#1D70B8;">★</div>
+              <div class="hub-label-pill" style="border-color:#1D70B8;">
+                <span class="hub-title">${n.nombre}</span>
+                <span class="hub-tag" style="background:#1D70B8; color:#ffffff; font-weight:800;">Cabecera LTN</span>
+              </div>
+            </div>
+          `
+        });
+
+        const marker = L.marker([n.lat, n.lng], {
+          pane: "markersPane",
+          icon: hubIcon,
+          title: "CTP Monte Grande — Cabecera Líneas LTN"
+        });
+
+        marker.on("click", (e) => {
+          if (e.originalEvent) e.originalEvent._markerClick = true;
+          abrirModalDetalle(n);
+        });
+
+        markersLayerGroup.addLayer(marker);
+      } else {
+        const destKey = esParticipante ? "ltn" : "bue";
+        const clogIcon = L.divIcon({
+          className: "leaflet-clog-icon",
+          iconSize: [0, 0],
+          iconAnchor: [0, 0],
+          html: `
+            <div class="clog-marker-wrap dest-${destKey} ${estaSel ? 'seleccionado' : ''}" data-id="${n.id}" style="${!esParticipante ? 'opacity: 0.4;' : ''}">
+              <div class="clog-marker-dot" style="${esParticipante ? 'background-color: #1D70B8;' : ''}"></div>
+              <div class="clog-marker-pill" style="${esParticipante ? 'border-left-color: #1D70B8;' : ''}">
+                <span class="pill-name">${n.nombre}</span>
+              </div>
+            </div>
+          `
+        });
+
+        const marker = L.marker([n.lat, n.lng], {
+          pane: "markersPane",
+          icon: clogIcon,
+          title: n.nombreCompleto
+        });
+
+        marker.on("click", (e) => {
+          if (e.originalEvent) e.originalEvent._markerClick = true;
+          abrirModalDetalle(n);
+        });
+
+        markersLayerGroup.addLayer(marker);
+      }
+    });
+
+    return;
+  }
+
+  // --- MODO FLUJOS A SORTERS TRADICIONAL ---
   let rutasActuales = [];
   let nodosAMostrar = [];
 
   if (esModoAMBA) {
     rutasActuales = rutasMetropolitanas;
     nodosAMostrar = [...nodosMetropolitanos, buscarNodoPorId("ctp_bue")];
+    if (badgeTotal) badgeTotal.textContent = "5 Rutas AMBA";
   } else {
     if (filtroHubActivo === "todos") {
       rutasActuales = rutasExcel;
       nodosAMostrar = nodosData;
+      if (badgeTotal) badgeTotal.textContent = "29 Rutas";
     } else {
       rutasActuales = rutasExcel.filter(r => r.hub === filtroHubActivo);
       const idsParticipantes = new Set();
@@ -691,10 +940,11 @@ function renderizarTodo() {
         idsParticipantes.add(r.destino);
       });
       nodosAMostrar = nodosData.filter(n => idsParticipantes.has(n.id) || n.esHub);
+      if (badgeTotal) badgeTotal.textContent = `${rutasActuales.length} Rutas`;
     }
   }
 
-  // 1. Dibujar Rutas
+  // 1. Dibujar Rutas Sorter
   rutasActuales.forEach(r => {
     const origen = buscarNodoPorId(r.origen);
     const destino = buscarNodoPorId(r.destino);
@@ -840,6 +1090,11 @@ function filtrarRutasHub(hubKey) {
     btn.classList.toggle("activa", btn.getAttribute("data-hub") === hubKey);
   });
 
+  const hintTexto = document.getElementById("mapa-hint-texto");
+  if (hintTexto) {
+    hintTexto.textContent = "Rutas de derivación de mercadería hacia Sorters de Correo Argentino • Hacé click en cualquier nodo para ver sus detalles";
+  }
+
   renderizarTodo();
 
   if (hubKey === "amba") {
@@ -856,6 +1111,44 @@ function filtrarRutasHub(hubKey) {
 }
 
 // =============================================================
+// ACTIVACIÓN DE MODO LÍNEAS LTN / LTC (DOBLE CLICK)
+// =============================================================
+function activarModoLTN() {
+  filtroHubActivo = "ltn";
+  subfiltroLTN = "todas";
+
+  document.querySelectorAll(".btn-filtro-ruta").forEach(btn => {
+    btn.classList.toggle("activa", btn.getAttribute("data-hub") === "ltn");
+  });
+
+  const hintTexto = document.getElementById("mapa-hint-texto");
+  if (hintTexto) {
+    hintTexto.textContent = "Red Troncal de Transporte • 23 Líneas LTN (Azul) y 5 Líneas LTC (Ámbar) • Hacé click en cualquier nodo";
+  }
+
+  renderizarTodo();
+
+  if (leafletMap) {
+    leafletMap.flyToBounds(BND_ARGENTINA, { duration: 1.2, padding: [15, 15] });
+  }
+}
+
+function subfiltrarLineasTroncales(tipo) {
+  subfiltroLTN = tipo;
+  renderizarTodo();
+}
+
+let ltnClickTimer = null;
+function manejarClickLTN(event) {
+  if (filtroHubActivo !== "ltn") {
+    if (ltnClickTimer) clearTimeout(ltnClickTimer);
+    ltnClickTimer = setTimeout(() => {
+      activarModoLTN();
+    }, 280);
+  }
+}
+
+// =============================================================
 // 8. PANEL / MODAL DE DETALLES DE PLANTA
 // =============================================================
 let fotoActualIdx = 0;
@@ -868,51 +1161,110 @@ function abrirModalDetalle(nodo) {
   const panel = document.getElementById("modal-detalle");
   if (!panel) return;
 
-  document.getElementById("modal-nodo-tipo").textContent = nodo.tipo || "CLOG";
-  document.getElementById("modal-nodo-provincia").textContent = nodo.provincia || "Argentina";
-  document.getElementById("modal-nodo-nombre").textContent = nodo.nombreCompleto || nodo.nombre;
-  document.getElementById("modal-nodo-sub").textContent = nodo.localidad || `${nodo.provincia} • Red Oficial Correo Argentino`;
+  const esModoLTN = (filtroHubActivo === "ltn");
 
-  document.getElementById("modal-kpi-capacidad").textContent = nodo.capacidad || "-- m²";
-  document.getElementById("modal-kpi-piezas").textContent = nodo.piezasDia ? `${nodo.piezasDia} pzs/día` : "--";
-  document.getElementById("modal-kpi-operatividad").textContent = nodo.operatividad || "24 / 7";
-  document.getElementById("modal-nodo-desc").textContent = nodo.desc || "Planta operativa estratégica de la Red Nacional.";
+  if (nodo.id === "ctp_bue" && esModoLTN) {
+    // Tarjeta personalizada para CTP BUE en Modo Líneas LTN / LTC
+    document.getElementById("modal-nodo-tipo").textContent = "Cabecera Troncal LTN";
+    document.getElementById("modal-nodo-provincia").textContent = "Buenos Aires";
+    document.getElementById("modal-nodo-nombre").textContent = "CTP BUE (Monte Grande)";
+    document.getElementById("modal-nodo-sub").textContent = "Esteban Echeverría • Cabecera Nacional de Despacho de Líneas LTN";
 
-  const bloqueDestino = document.getElementById("modal-bloque-destino");
-  const bloqueHubOrigenes = document.getElementById("modal-hub-origenes-box");
+    document.getElementById("modal-kpi-capacidad").textContent = "45.000 m²";
+    document.getElementById("modal-kpi-piezas").textContent = "180.000 pzs/día";
+    document.getElementById("modal-kpi-operatividad").textContent = "24 / 7";
+    document.getElementById("modal-nodo-desc").textContent = "Centro de concentración y cabecera de la red de transporte de larga distancia. Despacha 23 líneas troncales terrestres (LTN) hacia los centros logísticos del interior del país.";
 
-  if (nodo.esHub) {
-    if (bloqueDestino) bloqueDestino.style.display = "none";
-    if (bloqueHubOrigenes) {
-      bloqueHubOrigenes.style.display = "block";
-      const rutasHaciaHub = rutasExcel.filter(r => r.destino === nodo.id);
-      document.getElementById("modal-hub-origenes-titulo").textContent = `Plantas que derivan cargas a este Sorter (${rutasHaciaHub.length})`;
-      
-      const listContainer = document.getElementById("modal-hub-origenes-list");
-      listContainer.innerHTML = "";
-      rutasHaciaHub.forEach(r => {
-        const origNodo = buscarNodoPorId(r.origen);
-        if (origNodo) {
-          const chip = document.createElement("button");
-          chip.className = "chip-origen";
-          chip.textContent = origNodo.nombre;
-          chip.onclick = () => abrirModalDetalle(origNodo);
-          listContainer.appendChild(chip);
-        }
-      });
-    }
-  } else {
-    if (bloqueHubOrigenes) bloqueHubOrigenes.style.display = "none";
+    const bloqueDestino = document.getElementById("modal-bloque-destino");
+    const bloqueHubOrigenes = document.getElementById("modal-hub-origenes-box");
+
     if (bloqueDestino) {
       bloqueDestino.style.display = "block";
-      const rutaAsignada = (filtroHubActivo === "amba" ? rutasMetropolitanas : rutasExcel).find(r => r.origen === nodo.id);
-      if (rutaAsignada) {
-        const destNodo = buscarNodoPorId(rutaAsignada.destino);
-        document.getElementById("modal-destino-nombre").textContent = destNodo ? (destNodo.nombreCompleto || destNodo.nombre) : "Sorter Destino";
-        document.getElementById("modal-destino-info").textContent = rutaAsignada.distancia ? `Distancia de tránsito: ${rutaAsignada.distancia}` : `Flujo troncal hacia ${rutaAsignada.hub.toUpperCase()}`;
-      } else {
-        document.getElementById("modal-destino-nombre").textContent = "CTP BUE (Monte Grande)";
-        document.getElementById("modal-destino-info").textContent = "Flujo troncal nacional";
+      bloqueDestino.style.backgroundColor = "#f0f7ff";
+      bloqueDestino.style.borderColor = "#b9dcfa";
+      document.getElementById("modal-destino-nombre").innerHTML = `<span style="color:#1D70B8;">23 Líneas LTN Despachadas</span>`;
+      document.getElementById("modal-destino-info").innerHTML = `
+        <div style="color:#002554; font-weight:600; margin-top:2px;">
+          Unidades Semi Furgón y 12TN con itinerarios diarios a todo el país.
+        </div>
+      `;
+    }
+
+    if (bloqueHubOrigenes) {
+      bloqueHubOrigenes.style.display = "block";
+      document.getElementById("modal-hub-origenes-titulo").textContent = "Líneas LTN que parten de esta Cabecera (23)";
+      const listContainer = document.getElementById("modal-hub-origenes-list");
+      listContainer.innerHTML = "";
+
+      const lineasLTN = lineasTroncalesData.filter(l => l.tipoRed === "LTN");
+      lineasLTN.forEach(l => {
+        const chip = document.createElement("button");
+        chip.className = "chip-origen";
+        chip.style.backgroundColor = "#e0f2fe";
+        chip.style.borderColor = "#7dd3fc";
+        chip.style.color = "#0369a1";
+        chip.style.fontWeight = "700";
+        chip.innerHTML = `<strong>${l.codigo}</strong> • ${l.destinos.map(d => buscarNodoPorId(d)?.nombre).join('➔')}`;
+        chip.onclick = () => {
+          subfiltrarLineasTroncales("LTN");
+        };
+        listContainer.appendChild(chip);
+      });
+    }
+
+  } else {
+    // Tarjetas estándar (todos los demás CLOGs quedan exactamente iguales)
+    const bloqueDestino = document.getElementById("modal-bloque-destino");
+    if (bloqueDestino) {
+      bloqueDestino.style.backgroundColor = "#f0f7ff";
+      bloqueDestino.style.borderColor = "#bfdbfe";
+    }
+
+    document.getElementById("modal-nodo-tipo").textContent = nodo.tipo || "CLOG";
+    document.getElementById("modal-nodo-provincia").textContent = nodo.provincia || "Argentina";
+    document.getElementById("modal-nodo-nombre").textContent = nodo.nombreCompleto || nodo.nombre;
+    document.getElementById("modal-nodo-sub").textContent = nodo.localidad || `${nodo.provincia} • Red Oficial Correo Argentino`;
+
+    document.getElementById("modal-kpi-capacidad").textContent = nodo.capacidad || "-- m²";
+    document.getElementById("modal-kpi-piezas").textContent = nodo.piezasDia ? `${nodo.piezasDia} pzs/día` : "--";
+    document.getElementById("modal-kpi-operatividad").textContent = nodo.operatividad || "24 / 7";
+    document.getElementById("modal-nodo-desc").textContent = nodo.desc || "Planta operativa estratégica de la Red Nacional.";
+
+    const bloqueHubOrigenes = document.getElementById("modal-hub-origenes-box");
+
+    if (nodo.esHub) {
+      if (bloqueDestino) bloqueDestino.style.display = "none";
+      if (bloqueHubOrigenes) {
+        bloqueHubOrigenes.style.display = "block";
+        const rutasHaciaHub = rutasExcel.filter(r => r.destino === nodo.id);
+        document.getElementById("modal-hub-origenes-titulo").textContent = `Plantas que derivan cargas a este Sorter (${rutasHaciaHub.length})`;
+        
+        const listContainer = document.getElementById("modal-hub-origenes-list");
+        listContainer.innerHTML = "";
+        rutasHaciaHub.forEach(r => {
+          const origNodo = buscarNodoPorId(r.origen);
+          if (origNodo) {
+            const chip = document.createElement("button");
+            chip.className = "chip-origen";
+            chip.textContent = origNodo.nombre;
+            chip.onclick = () => abrirModalDetalle(origNodo);
+            listContainer.appendChild(chip);
+          }
+        });
+      }
+    } else {
+      if (bloqueHubOrigenes) bloqueHubOrigenes.style.display = "none";
+      if (bloqueDestino) {
+        bloqueDestino.style.display = "block";
+        const rutaAsignada = (filtroHubActivo === "amba" ? rutasMetropolitanas : rutasExcel).find(r => r.origen === nodo.id);
+        if (rutaAsignada) {
+          const destNodo = buscarNodoPorId(rutaAsignada.destino);
+          document.getElementById("modal-destino-nombre").textContent = destNodo ? (destNodo.nombreCompleto || destNodo.nombre) : "Sorter Destino";
+          document.getElementById("modal-destino-info").textContent = rutaAsignada.distancia ? `Distancia de tránsito: ${rutaAsignada.distancia}` : `Flujo troncal hacia ${rutaAsignada.hub.toUpperCase()}`;
+        } else {
+          document.getElementById("modal-destino-nombre").textContent = "CTP BUE (Monte Grande)";
+          document.getElementById("modal-destino-info").textContent = "Flujo troncal nacional";
+        }
       }
     }
   }
