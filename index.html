@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Red Logística Nacional — Flujos hacia Sorters — Correo Argentino</title>
   <meta name="description" content="Mapa logístico de la República Argentina con Centros Logísticos y trazado de rutas hacia sorters de destino.">
+  <link rel="stylesheet" href="leaflet.css">
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +14,7 @@
 <body class="vista-mapa-limpio">
 
   <!-- =====================================================
-       HEADER PRINCIPAL MINIMALISTA CON FILTROS DE RUTA
+       HEADER PRINCIPAL CON FILTROS DE RUTA Y BUSCADOR
        ===================================================== -->
   <header id="topbar">
     <div class="topbar-left">
@@ -30,7 +31,7 @@
 
       <div class="topbar-title-clean">
         <h1>Flujos y Destinos de Cargas Logísticas</h1>
-        <span class="topbar-badge">29 Rutas a Sorters</span>
+        <span class="topbar-badge" id="badge-total-rutas">29 Rutas a Sorters</span>
       </div>
 
       <!-- Filtros rápidos por Planta Destino -->
@@ -54,45 +55,65 @@
     </div>
 
     <div class="topbar-right">
-      <div class="search-pill">
-        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        <input type="text" id="global-search" placeholder="Buscar centro o nodo..." autocomplete="off">
+      <div class="search-pill-wrapper">
+        <div class="search-pill">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="global-search" placeholder="Buscar centro o nodo..." autocomplete="off">
+          <button id="btn-clear-search" class="btn-clear-search" style="display:none;" onclick="limpiarBuscador()">&times;</button>
+        </div>
+        <!-- Resultados predictivos del buscador -->
+        <div id="search-results-dropdown" class="search-results-dropdown" style="display: none;"></div>
       </div>
     </div>
   </header>
 
   <!-- =====================================================
-       MAPA A PANTALLA COMPLETA
+       MAPA A PANTALLA COMPLETA (LEAFLET)
        ===================================================== -->
   <main id="pantalla-mapa">
     <div id="mapa-contenedor" class="mapa-contenedor-full">
       
+      <!-- Contenedor Leaflet oficial -->
+      <div id="mapa-leaflet" class="mapa-leaflet"></div>
+
       <!-- Controles de zoom sobre el mapa -->
       <div class="mapa-floating-controls">
-        <button class="btn-ctrl-mapa" onclick="zoomIn()" title="Acercar">+</button>
-        <button class="btn-ctrl-mapa" onclick="zoomOut()" title="Alejar">−</button>
-        <button class="btn-ctrl-mapa" onclick="zoomReset()" title="Restablecer vista nacional">↺</button>
+        <button id="btn-zoom-in" class="btn-ctrl-mapa" onclick="zoomIn()" title="Acercar">+</button>
+        <button id="btn-zoom-out" class="btn-ctrl-mapa" onclick="zoomOut()" title="Alejar">−</button>
+        <button id="btn-zoom-reset" class="btn-ctrl-mapa" onclick="zoomReset()" title="Restablecer vista nacional">↺</button>
+      </div>
+
+      <!-- Rosa de los vientos / Compás de orientación -->
+      <div class="mapa-compass">
+        <div class="compass-arrow-wrap">
+          <span class="compass-n">N</span>
+          <svg class="compass-arrow" width="14" height="20" viewBox="0 0 14 20" fill="none">
+            <polygon points="7,1 12,18 7,13 2,18" fill="#002554" stroke="#FFD200" stroke-width="1.5" stroke-linejoin="round"/>
+            <polygon points="7,1 7,13 2,18" fill="#FFD200"/>
+          </svg>
+        </div>
+        <span class="compass-label">Argentina</span>
       </div>
 
       <!-- Leyenda moderna y limpia con destinos -->
       <div class="mapa-leyenda">
-        <div class="leyenda-titulo">Destino de Mercadería:</div>
-        <div class="leyenda-fila">
+        <div class="leyenda-titulo">Destino de Cargas a Sorters:</div>
+        <div class="leyenda-fila ley-item-bue" onclick="filtrarRutasHub('bue')">
           <span class="leyenda-linea linea-bue"></span>
           <span>A <strong>CTP BUE</strong> (Monte Grande)</span>
         </div>
-        <div class="leyenda-fila">
+        <div class="leyenda-fila ley-item-cordoba" onclick="filtrarRutasHub('cordoba')">
           <span class="leyenda-linea linea-cordoba"></span>
           <span>A <strong>CLOG Córdoba</strong></span>
         </div>
-        <div class="leyenda-fila">
+        <div class="leyenda-fila ley-item-santafe" onclick="filtrarRutasHub('santa_fe')">
           <span class="leyenda-linea linea-santafe"></span>
           <span>A <strong>CLOG Santa Fe</strong></span>
         </div>
-        <div class="leyenda-fila" id="ley-fila-amba" style="display: none;">
+        <div class="leyenda-fila ley-item-amba" id="ley-fila-amba" style="display: none;" onclick="filtrarRutasHub('amba')">
           <span class="leyenda-linea linea-amba"></span>
           <span>Flujo AMBA a <strong>CTP BUE</strong></span>
         </div>
@@ -107,34 +128,90 @@
         </div>
       </div>
 
-      <!-- Lienzo SVG del mapa -->
-      <div id="mapa-wrap" class="mapa-wrap">
-        <svg id="mapa-svg" viewBox="0 0 500 900" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <filter id="shadow-prov">
-              <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#00309050"/>
-            </filter>
-            <linearGradient id="gradient-cluster" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#002554"/>
-              <stop offset="100%" stop-color="#093d78"/>
-            </linearGradient>
-            <filter id="shadow-cluster" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="1.5" stdDeviation="2" flood-color="#001838" flood-opacity="0.35"/>
-            </filter>
-          </defs>
-          <!-- Las provincias, rutas y nodos se construyen dinámicamente con script.js -->
-        </svg>
+      <!-- Banner Informativo AMBA (aparece al activar modo AMBA) -->
+      <div id="banner-modo-amba" class="banner-modo-amba" style="display: none;">
+        <div class="banner-amba-content">
+          <span class="badge-amba-live">ÁREA METROPOLITANA</span>
+          <span>Visualizando los 5 centros del AMBA y sus derivaciones directas al <strong>CTP BUE (Monte Grande)</strong></span>
+        </div>
+        <button class="btn-volver-nacional" onclick="filtrarRutasHub('todos')">Volver a Vista Nacional</button>
       </div>
 
       <!-- Hint discreto inferior -->
       <div class="mapa-hint-bottom">
-        <span>Rutas de derivación de mercadería hacia Sorters de Correo Argentino • Podes filtrar por destino arriba</span>
+        <span>Rutas de derivación de mercadería hacia Sorters de Correo Argentino • Hacé click en cualquier nodo para ver sus detalles</span>
       </div>
 
     </div>
   </main>
 
-  <!-- Scripts GeoJSON y Lógica -->
+  <!-- =====================================================
+       MODAL / PANEL LATERAL DE DETALLES DE PLANTA
+       ===================================================== -->
+  <div id="modal-detalle-backdrop" class="modal-detalle-backdrop" onclick="cerrarModalDetalle()" style="display: none;"></div>
+  
+  <aside id="modal-detalle" class="modal-detalle-panel" style="display: none;">
+    <div class="modal-detalle-header">
+      <div class="modal-header-top">
+        <span id="modal-nodo-tipo" class="modal-badge-tipo">CLOG</span>
+        <span id="modal-nodo-provincia" class="modal-badge-prov">Provincia</span>
+        <button class="modal-btn-close" onclick="cerrarModalDetalle()" title="Cerrar">&times;</button>
+      </div>
+      <h2 id="modal-nodo-nombre" class="modal-title">Nombre de la Planta</h2>
+      <p id="modal-nodo-sub" class="modal-sub">Localidad / Ubicación</p>
+    </div>
+
+    <div class="modal-detalle-body">
+      <!-- Galería de fotos -->
+      <div id="modal-galeria-wrap" class="modal-galeria-wrap">
+        <div id="modal-galeria" class="modal-galeria-container"></div>
+        <div id="modal-galeria-dots" class="modal-galeria-dots"></div>
+      </div>
+
+      <!-- Bloque de Destino / Sorter asignado -->
+      <div id="modal-bloque-destino" class="modal-bloque-destino">
+        <div class="bloque-destino-header">
+          <span class="destino-icon">➔</span>
+          <div>
+            <div class="destino-label">Derivación de Cargas (Sorter Destino)</div>
+            <div id="modal-destino-nombre" class="destino-valor">CTP BUE (Monte Grande)</div>
+          </div>
+        </div>
+        <div id="modal-destino-info" class="destino-info-extra"></div>
+      </div>
+
+      <!-- Grilla de Métricas y KPIs -->
+      <div class="modal-kpis-grid">
+        <div class="modal-kpi-card">
+          <span class="kpi-card-label">Superficie Operativa</span>
+          <span id="modal-kpi-capacidad" class="kpi-card-valor">-- m²</span>
+        </div>
+        <div class="modal-kpi-card">
+          <span class="kpi-card-label">Volumen Estimado</span>
+          <span id="modal-kpi-piezas" class="kpi-card-valor">-- piezas/día</span>
+        </div>
+        <div class="modal-kpi-card">
+          <span class="kpi-card-label">Régimen Operativo</span>
+          <span id="modal-kpi-operatividad" class="kpi-card-valor">24 / 7</span>
+        </div>
+      </div>
+
+      <!-- Descripción Funcional -->
+      <div class="modal-desc-box">
+        <div class="desc-box-titulo">Rol Operativo en la Red Nacional</div>
+        <p id="modal-nodo-desc" class="desc-box-texto">Descripción del nodo...</p>
+      </div>
+
+      <!-- En caso de ser Sorter Hub: lista de orígenes que alimentan este Sorter -->
+      <div id="modal-hub-origenes-box" class="modal-hub-origenes-box" style="display: none;">
+        <div class="desc-box-titulo" id="modal-hub-origenes-titulo">Plantas que derivan cargas a este Sorter</div>
+        <div id="modal-hub-origenes-list" class="modal-hub-origenes-list"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Scripts: Leaflet, GeoJSON de Provincias Argentinas y Lógica de Flujos -->
+  <script src="leaflet.js"></script>
   <script src="provincias-geojson.js"></script>
   <script src="script.js"></script>
 
